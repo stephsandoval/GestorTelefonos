@@ -1,4 +1,6 @@
-ALTER FUNCTION dbo.CalcularMontosFactura (@inIDContrato INT)
+ALTER FUNCTION dbo.CalcularMontosFactura (@inIDContrato INT
+	, @inFechaOperacion DATE
+)
 RETURNS @MontoFactura TABLE (
 	MontoAntesIVA MONEY
 	, MontoDespuesIVA MONEY
@@ -11,6 +13,8 @@ BEGIN
 	-- DECLARAR VARIABLES:
 
 	DECLARE @montoAntesIVA MONEY;
+	DECLARE @IDFactura INT;
+	DECLARE @IDDetalle INT;
 	DECLARE @montoFijo MONEY;
 
 	DECLARE @porcentajeIVA FLOAT;
@@ -29,16 +33,28 @@ BEGIN
 	FROM Factura F
 	WHERE F.IDContrato = @inIDContrato
 
-	SELECT @montoFijo = SUM(TE.Valor)
-	FROM TipoElemento TE
-	WHERE TE.EsFijo = 1 AND TE.ID != 12
+	SELECT @IDFactura = F.ID
+	FROM Factura F
+	WHERE F.IDContrato = @inIDContrato AND F.FechaFactura = @inFechaOperacion;
+
+	SELECT @IDDetalle = D.ID
+	FROM dbo.Detalle D
+	WHERE D.IDFactura = @IDFactura
+
+	SELECT @montoFijo = SUM(ETT.Valor)
+	FROM CobroFijo CF
+	INNER JOIN ElementoDeTipoTarifa ETT ON ETT.ID = CF.IDElementoDeTipoTarifa
+	INNER JOIN TipoElemento TE ON TE.ID = ETT.IDTipoElemento
+	WHERE CF.IDDetalle = @IDDetalle AND TE.IDTipoUnidad = 1;
 
 	SET @montoAntesIVA = @montoAntesIVA + @montoFijo;
 
 	-- calcular el monto despues de aplicar IVA:
 	SELECT @porcentajeIVA = ETT.Valor
-	FROM ElementoDeTipoTarifa ETT
-	WHERE ETT.IDTipoElemento = 12
+	FROM CobroFijo CF
+	INNER JOIN ElementoDeTipoTarifa ETT ON ETT.ID = CF.IDElementoDeTipoTarifa
+	INNER JOIN TipoElemento TE ON TE.ID = ETT.IDTipoElemento
+	WHERE CF.IDDetalle = @IDDetalle AND TE.IDTipoUnidad = 3;
 
 	SET @porcentajeIVA = (@porcentajeIVA + 100) / 100
 	SET @montoDespuesIVA = @montoAntesIVA * @porcentajeIVA
