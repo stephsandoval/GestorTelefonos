@@ -1,8 +1,9 @@
-ALTER FUNCTION dbo.CalcularMontosFactura (@inIDContrato INT
+ALTER FUNCTION dbo.CalcularMontosFinalesFactura (
+	  @inIDContrato INT
 	, @inFechaOperacion DATE
 )
 RETURNS @MontoFactura TABLE (
-	MontoAntesIVA MONEY
+	  MontoAntesIVA MONEY
 	, MontoDespuesIVA MONEY
 	, MultaFacturasPendientes MONEY
 	, MontoTotal MONEY
