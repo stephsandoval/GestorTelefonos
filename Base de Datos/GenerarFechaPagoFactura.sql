@@ -1,4 +1,4 @@
-ALTER FUNCTION dbo.GenerarNuevaFechaPago (@inFecha DATE, @inIDContrato INT)
+ALTER FUNCTION dbo.GenerarFechaPagoFactura (@inFecha DATE, @inIDContrato INT)
 RETURNS DATE
 AS
 BEGIN

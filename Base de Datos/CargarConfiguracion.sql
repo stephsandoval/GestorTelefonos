@@ -21,7 +21,7 @@ DECLARE @xmlData XML;
 -- INICIALIZAR VARIABLES:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\configuracion1.xml', SINGLE_BLOB) AS xmlfile(X)
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\configuracion.xml', SINGLE_BLOB) AS xmlfile(X)
 
 -- preparar el archivo xml:
 DECLARE @value INT;

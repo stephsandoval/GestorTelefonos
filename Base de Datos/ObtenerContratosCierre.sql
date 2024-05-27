@@ -1,4 +1,4 @@
-CREATE FUNCTION dbo.ObtenerContratosCierre (@inFecha DATE)
+ALTER FUNCTION dbo.ObtenerContratosCierre (@inFecha DATE)
 RETURNS @ContratoCierre TABLE (
     IDContrato INT
 )

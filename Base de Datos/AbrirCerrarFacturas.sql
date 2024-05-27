@@ -94,8 +94,8 @@ BEGIN
 				, 0
 				, 0
 				, 0
-				, dbo.GenerarNuevaFecha (@inFechaOperacion)
-				, dbo.GenerarNuevaFechaPago (@inFechaOperacion, CA.IDContrato)
+				, dbo.GenerarFechaCierreFactura (@inFechaOperacion)
+				, dbo.GenerarFechaPagoFactura (@inFechaOperacion, CA.IDContrato)
 				, 0
 			FROM @ClienteApertura CA
 			ORDER BY CA.SEC

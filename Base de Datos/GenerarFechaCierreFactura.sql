@@ -1,4 +1,4 @@
-ALTER FUNCTION dbo.GenerarNuevaFecha (@inFecha DATE)
+ALTER FUNCTION dbo.GenerarFechaCierreFactura (@inFecha DATE)
 RETURNS DATE
 AS
 BEGIN
