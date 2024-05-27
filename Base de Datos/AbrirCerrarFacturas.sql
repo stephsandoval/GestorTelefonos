@@ -48,7 +48,7 @@ BEGIN
 			, MT.MultaFacturasPendientes
 			, MT.MontoTotal
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC
-		CROSS APPLY dbo.CalcularMontosFactura (CC.IDContrato, @inFechaOperacion) MT;
+		CROSS APPLY dbo.CalcularMontosFinalesFactura (CC.IDContrato, @inFechaOperacion) MT;
 
 		INSERT INTO @ClienteApertura (IDContrato)
 		SELECT C.ID
@@ -91,7 +91,11 @@ BEGIN
 			)
 			OUTPUT INSERTED.ID, INSERTED.IDContrato INTO @NuevaFactura (IDFactura, IDContrato)
 			SELECT CA.IDContrato
-				, 0
+				, CASE 
+					WHEN ETT.Valor = NULL THEN 0 
+					WHEN ETT.IDTipoElemento = 9 OR ETT.IDTipoElemento = 10 THEN 0
+					ELSE ETT.VALOR 
+				  END
 				, 0
 				, 0
 				, 0
@@ -99,6 +103,9 @@ BEGIN
 				, dbo.GenerarFechaPagoFactura (@inFechaOperacion, CA.IDContrato)
 				, 0
 			FROM @ClienteApertura CA
+			INNER JOIN dbo.Contrato C ON CA.IDContrato = C.ID
+			INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
+			WHERE ETT.IDTipoElemento = 1 OR ETT.IDTipoElemento = 9 OR ETT.IDTipoElemento = 10
 			ORDER BY CA.SEC
 
 			INSERT INTO dbo.Detalle (IDFactura)
