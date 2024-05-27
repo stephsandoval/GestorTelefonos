@@ -93,6 +93,11 @@ BEGIN
 
     -- ----------------------------------------
 
+	-- abrir o cerrar una nueva factura para los contratos:
+	EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
+
+	-- ----------------------------------------
+
     -- cargar informacion de llamadas:
     INSERT INTO dbo.LlamadaInput (HoraInicio, HoraFin, NumeroDesde, NumeroA)
     SELECT 
@@ -105,6 +110,11 @@ BEGIN
 
     -- ----------------------------------------
 
+	-- procesar llamadas:
+	EXEC dbo.ProcesarLlamada @fechaActual, @outResultCode OUTPUT;
+
+	-- ----------------------------------------
+
     -- cargar informacion de uso de datos:
     INSERT INTO dbo.UsoDatosInput (Fecha, NumeroTelefono, CantidadGigas)
     SELECT 
@@ -113,12 +123,6 @@ BEGIN
         UsoDatos.value('@QGigas', 'FLOAT') AS CantidadDatos
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
-
-    -- ------------------------------------------------ --
-	-- SIMULACION:
-
-	-- procesar las facturas:
-	EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
 
     DELETE FROM @FechaOperacion WHERE Fecha = @fechaActual;
 	DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;

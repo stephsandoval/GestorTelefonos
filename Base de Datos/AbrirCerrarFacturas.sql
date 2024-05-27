@@ -1,6 +1,6 @@
 ALTER PROCEDURE dbo.AbrirCerrarFacturas
-    @inFechaOperacion DATE,
-    @outResultCode INT OUTPUT
+      @inFechaOperacion DATE
+    , @outResultCode INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -8,7 +8,7 @@ BEGIN
 
         -- DECLARAR VARIABLES:
         DECLARE @ClienteCierre TABLE (
-            SEC INT IDENTITY(1,1)
+              SEC INT IDENTITY(1,1)
             , IDContrato INT
 			, MontoAntesIVA MONEY
 			, MontoDespuesIVA MONEY
@@ -17,25 +17,26 @@ BEGIN
         );
 
 		DECLARE @ClienteApertura TABLE (
-			SEC INT IDENTITY(1,1),
-			IDContrato INT
+			  SEC INT IDENTITY(1,1)
+			, IDContrato INT
 		);
 
 		DECLARE @NuevaFactura TABLE (
-            IDFactura INT,
-            IDContrato INT
+              IDFactura INT
+            , IDContrato INT
         );
 
 		DECLARE @NuevoDetalle TABLE (
-			IDDetalle INT,
-			IDFactura INT
+			  IDDetalle INT
+			, IDFactura INT
 		);
 
         -- INICIALIZAR VARIABLES:
         SET @outResultCode = 0;
 
-        -- INICIALIZAR TABLAS VARIABLES:
-		INSERT INTO @ClienteCierre (IDContrato
+        -- INICIALIZAR TABLAS:
+		INSERT INTO @ClienteCierre (
+			  IDContrato
 			, MontoAntesIVA
 			, MontoDespuesIVA
 			, MultaFacturaPrevia
