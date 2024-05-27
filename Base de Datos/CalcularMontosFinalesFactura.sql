@@ -14,6 +14,8 @@ BEGIN
 	-- DECLARAR VARIABLES:
 
 	DECLARE @montoAntesIVA MONEY;
+	DECLARE @montoLlamadas MONEY;
+
 	DECLARE @IDFactura INT;
 	DECLARE @IDDetalle INT;
 	DECLARE @montoFijo MONEY;
@@ -33,6 +35,10 @@ BEGIN
 	SELECT @montoAntesIVA = F.TotalPagarAntesIVA 
 	FROM Factura F
 	WHERE F.IDContrato = @inIDContrato
+
+	SELECT @montoLlamadas = dbo.CalcularMontoLlamadas (@inIDContrato, @inFechaOperacion)
+
+	SET @montoAntesIVA = @montoAntesIVA + @montoLlamadas
 
 	SELECT @IDFactura = F.ID
 	FROM Factura F
