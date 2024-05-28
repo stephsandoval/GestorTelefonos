@@ -15,6 +15,11 @@ BEGIN
 			, NumeroPaga VARCHAR(32)
 		);
 
+		DECLARE @NuevaLlamada TABLE (
+			  IDLlamada INT
+			, IDLlamadaInput INT
+		);
+
 		-- INICIALIZAR TABLAS:
 		INSERT INTO @LlamadaRegistrada (
 			  IDLlamadaInput
@@ -32,12 +37,14 @@ BEGIN
 				ELSE LI.NumeroDesde
 				END
 		FROM dbo.LlamadaInput LI
+		WHERE CONVERT(DATE, LI.HoraInicio) = @inFechaOperacion
 
 		INSERT INTO dbo.Llamada (
 			  IDDetalle
 			, IDLlamadaInput
 			, CantidadMinutos
 		)
+		OUTPUT Inserted.ID, Inserted.IDLlamadaInput INTO @NuevaLlamada (IDLlamada, IDLlamadaInput)
 		SELECT 
 			  D.ID
 			, LR.IDLlamadaInput
@@ -46,6 +53,19 @@ BEGIN
 		INNER JOIN dbo.Contrato C ON C.NumeroTelefono = LR.NumeroPaga
 		INNER JOIN dbo.Factura F ON F.IDContrato = C.ID
 		INNER JOIN dbo.Detalle D ON D.IDFactura = F.ID
+
+		SELECT * FROM @LlamadaRegistrada LR WHERE LR.NumeroA NOT LIKE '6%' AND LR.NumeroA NOT LIKE '7%'
+
+		INSERT INTO dbo.LlamadaLocal (
+			  IDLlamada
+			, IDContrato
+		)
+		SELECT NL.IDLlamada
+			, C.ID
+		FROM @NuevaLlamada NL
+		INNER JOIN @LlamadaRegistrada LR ON LR.IDLlamadaInput = NL.IDLlamadaInput
+		INNER JOIN dbo.Contrato C ON C.NumeroTelefono = LR.NumeroPaga
+		WHERE LR.NumeroA NOT LIKE '6%' AND LR.NumeroA NOT LIKE '7%';
 
 	END TRY
     BEGIN CATCH
