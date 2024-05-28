@@ -30,14 +30,23 @@ CREATE TABLE TipoUnidad (
 
 -- ---------------------------------------- --
 
--- tabla de tipos de elementos:
+-- tabla de tipos de elementos no fijos:
 CREATE TABLE TipoElemento (
 	ID INT NOT NULL PRIMARY KEY,
 	IDTipoUnidad INT NOT NULL,
 	Nombre VARCHAR(64) NOT NULL,
-	Valor INT,
 	EsFijo BIT NOT NULL,
 	FOREIGN KEY (IDTipoUnidad) REFERENCES TipoUnidad(ID)
+);
+
+-- ---------------------------------------- --
+
+-- tabla de tipos de elementos no fijos:
+CREATE TABLE TipoElementoFijo (
+	ID INT NOT NULL PRIMARY KEY,
+	IDTipoElemento INT NOT NULL,
+	Valor INT NOT NULL
+	FOREIGN KEY (IDTipoElemento) REFERENCES TipoElemento(ID)
 );
 
 -- ---------------------------------------- --
@@ -271,6 +280,7 @@ CREATE TABLE LlamadaNoLocal (
 --DROP TABLE Parentesco;
 --DROP TABLE ElementoDeTipoTarifa;
 --DROP TABLE TipoRelacionFamiliar;
+--DROP TABLE TipoElementoFijo;
 --DROP TABLE TipoElemento;
 --DROP TABLE TipoUnidad;
 --DROP TABLE Llamada;

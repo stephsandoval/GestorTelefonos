@@ -28,12 +28,12 @@ BEGIN
     )
     SELECT 
           I.ID AS IDTipoTarifa
-        , ET.ID AS IDTipoElemento
-        , ET.Valor
+        , TEF.ID AS IDTipoElemento
+        , TEF.Valor
     FROM 
         inserted I
     JOIN 
-        dbo.TipoElemento ET ON ET.EsFijo = 1;
+        dbo.TipoElementoFijo TEF ON TEF.IDTipoElemento IS NOT NULL;
 
     SET NOCOUNT OFF;
 END;
