@@ -59,14 +59,6 @@ BEGIN
 		SELECT IDContrato
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion);
 
-		--SELECT * FROM @ClienteCierre;
-
-        --SELECT IDContrato
-        --FROM @ClienteCierre;
-
-		--SELECT IDContrato
-		--FROM @ClienteApertura;
-
 		BEGIN TRANSACTION tOperarFactura
 
 			-- cerrar facturas:
