@@ -1,25 +1,10 @@
--- Armando Castro, Stephanie Sandoval | Jun 10. 24
--- Tarea Programada 03 | Base de Datos I
-
--- Script:
--- REALIZA LA LECTURA DEL ARCHIVO XML DE OPERACIONES
-
--- Notas adicionales:
--- el archivo se tiene de forma local en una de las computadoras
--- se lee y se mapea la informacion hacia las tablas correspondientes
-
--- ************************************************************* --
-
 USE Telefonos;
 GO
 
 -- DECLARAR VARIABLES:
-
 DECLARE @xmlData XML;
-
 DECLARE @fechaActual DATE;
 DECLARE @FechaOperacion TABLE (Fecha DATE);
-
 DECLARE @outResultCode INT;
 
 -- ------------------------------------------------------------- --
@@ -44,22 +29,25 @@ FROM @xmlData.nodes('/Operaciones/FechaOperacion') AS T(FechaOperacion);
 
 WHILE EXISTS (SELECT 1 FROM @FechaOperacion)
 BEGIN
-
-	-- DECLARAR VARIABLES:
-
-	-- tabla para las operaciones del dia:
+    -- DECLARAR VARIABLES:
     DECLARE @OperacionDiaria TABLE (
         Fecha DATE,
         Operacion XML
     );
 
-	-- ------------------------------------------------ --
-	-- INICIALIZAR VARIABLES:
+    DECLARE @PagoFacturas TABLE (
+        SEC INT IDENTITY(1,1),
+        NumeroTelefono VARCHAR(32)
+    );
 
-	-- seleccionar la primera fecha disponible:
+    DECLARE @cantidadPagosFacturas INT;
+    DECLARE @pagoActual INT;
+    DECLARE @numeroActual VARCHAR(32);
+
+    -- ------------------------------------------------ --
+    -- INICIALIZAR VARIABLES:
     SELECT TOP 1 @fechaActual = Fecha FROM @FechaOperacion ORDER BY Fecha;
 
-	-- cargar las operaciones en la tabla:
     INSERT INTO @OperacionDiaria (Fecha, Operacion)
     SELECT 
         FechaOperacion.value('@fecha', 'DATE') AS Fecha,
@@ -68,9 +56,8 @@ BEGIN
     WHERE FechaOperacion.value('@fecha', 'DATE') = @fechaActual;
 
     -- ------------------------------------------------ --
-	-- CARGAR DATOS:
-
-    -- cargar datos de clientes:
+    -- CARGAR DATOS:
+    -- Cargar datos de clientes
     INSERT INTO dbo.Cliente (Identificacion, Nombre)
     SELECT 
         ClienteNuevo.value('@Identificacion', 'VARCHAR(16)') AS Identificacion,
@@ -79,8 +66,7 @@ BEGIN
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/ClienteNuevo') AS T(ClienteNuevo);
 
     -- ----------------------------------------
-
-    -- cargar datos de contratos:
+    -- Cargar datos de contratos
     INSERT INTO dbo.Contrato (NumeroTelefono, IDCliente, IDTipoTarifa, FechaContrato)
     SELECT 
         NuevoContrato.value('@Numero', 'VARCHAR(16)') AS Numero,
@@ -92,13 +78,39 @@ BEGIN
     JOIN dbo.Cliente C ON NuevoContrato.value('@DocIdCliente', 'VARCHAR(16)') = C.Identificacion;
 
     -- ----------------------------------------
+    -- Abrir o cerrar una nueva factura para los contratos
+    EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
 
-	-- abrir o cerrar una nueva factura para los contratos:
-	EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
+    -- ----------------------------------------
+    -- Cargar informacion de los pagos de facturas
+    INSERT INTO @PagoFacturas (NumeroTelefono)
+    SELECT 
+        NuevoPago.value('@Numero', 'VARCHAR(32)') AS NumeroTelefono
+    FROM @OperacionDiaria AS O
+    CROSS APPLY O.Operacion.nodes('/FechaOperacion/PagoFactura') AS T(NuevoPago);
 
-	-- ----------------------------------------
+    SELECT @cantidadPagosFacturas = COUNT(PF.SEC)
+    FROM @PagoFacturas PF;
 
-    -- cargar informacion de llamadas:
+    SET @pagoActual = 1;
+
+    WHILE @pagoActual <= @cantidadPagosFacturas
+    BEGIN
+        SELECT @numeroActual = PF.NumeroTelefono
+        FROM @PagoFacturas PF
+        WHERE PF.SEC = @pagoActual;
+
+        UPDATE TOP (1) F
+        SET F.EstaPagada = 1
+        FROM dbo.Factura F
+        INNER JOIN dbo.Contrato C ON C.ID = F.IDContrato
+        WHERE C.NumeroTelefono = @numeroActual AND F.EstaPagada = 0;
+
+        SET @pagoActual = @pagoActual + 1;
+    END;
+
+    -- ----------------------------------------
+    -- Cargar informacion de llamadas
     INSERT INTO dbo.LlamadaInput (HoraInicio, HoraFin, NumeroDesde, NumeroA)
     SELECT 
         LlamadaTelefonica.value('@Inicio', 'DATETIME') AS Inicio,
@@ -109,13 +121,11 @@ BEGIN
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/LlamadaTelefonica') AS T(LlamadaTelefonica);
 
     -- ----------------------------------------
+    -- Procesar llamadas
+    EXEC dbo.ProcesarLlamada @fechaActual, @outResultCode OUTPUT;
 
-	-- procesar llamadas:
-	EXEC dbo.ProcesarLlamada @fechaActual, @outResultCode OUTPUT;
-
-	-- ----------------------------------------
-
-    -- cargar informacion de uso de datos:
+    -- ----------------------------------------
+    -- Cargar informacion de uso de datos
     INSERT INTO dbo.UsoDatosInput (Fecha, NumeroTelefono, CantidadGigas)
     SELECT 
         O.Fecha AS Fecha,
@@ -125,9 +135,8 @@ BEGIN
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
 
     DELETE FROM @FechaOperacion WHERE Fecha = @fechaActual;
-	DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;
-
-END
+    DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;
+END;
 
 -- ------------------------------------------------------------- --
 -- FINALIZAR PROCESO:
