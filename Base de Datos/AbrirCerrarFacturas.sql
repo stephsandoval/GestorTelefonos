@@ -113,14 +113,16 @@ BEGIN
             SELECT NF.IDFactura
             FROM @NuevaFactura NF;
 
-			INSERT INTO dbo.CobroFijo (IDDetalle, IDElementoDeTipoTarifa)
-            SELECT ND.IDDetalle, ETT.ID
+			INSERT INTO dbo.CobroFijo (IDDetalle
+				, IDElementoDeTipoTarifa)
+            SELECT ND.IDDetalle
+				, ETT.ID
             FROM @NuevoDetalle ND
             INNER JOIN dbo.Factura F ON ND.IDFactura = F.ID
             INNER JOIN dbo.Contrato C ON F.IDContrato = C.ID
-            INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
+			INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
 			INNER JOIN dbo.TipoElemento TE ON ETT.IDTipoElemento = TE.ID
-            WHERE TE.EsFijo = 1;
+            WHERE TE.EsObligatorio = 1;
 
 		COMMIT TRANSACTION tOperarFactura
 

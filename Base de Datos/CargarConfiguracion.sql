@@ -21,7 +21,7 @@ DECLARE @xmlData XML;
 -- INICIALIZAR VARIABLES:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\config2.xml', SINGLE_BLOB) AS xmlfile(X)
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\configuracion.xml', SINGLE_BLOB) AS xmlfile(X)
 
 -- preparar el archivo xml:
 DECLARE @value INT;
@@ -42,31 +42,32 @@ WITH (
 -- ---------------------------------------- --
 
 -- ingresar informacion de la seccion TiposElemento en la tabla TipoElemento
-INSERT INTO dbo.TipoElemento (ID, IDTipoUnidad, Nombre, EsFijo)
+INSERT INTO dbo.TipoElemento (ID, IDTipoUnidad, Nombre, EsFijo, EsObligatorio)
 SELECT 
-    Id,
-    IdTipoUnidad,
-    Nombre,
-    EsFijo
+      Id
+    , IdTipoUnidad
+    , Nombre
+    , EsFijo
+	, CASE WHEN Id IN (11, 12, 13) THEN 1 ELSE 0 END AS EsObligatorio
 FROM OPENXML (@value, '/Data/TiposElemento/TipoElemento', 1)
 WITH (
-    Id INT,
-    IdTipoUnidad INT,
-    Nombre VARCHAR(64),
-    EsFijo BIT
+      Id INT
+    , IdTipoUnidad INT
+    , Nombre VARCHAR(64)
+    , EsFijo BIT
 );
 
 -- ingresar informacion de la seccion TiposElemento en la tabla TipoElementoFijo si EsFijo = 1
 INSERT INTO dbo.TipoElementoFijo (ID, IDTipoElemento, Valor)
 SELECT 
-    Id,
-    Id AS IDTipoElemento,
-    Valor
+      Id
+    , Id AS IDTipoElemento
+    , Valor
 FROM OPENXML (@value, '/Data/TiposElemento/TipoElemento', 1)
 WITH (
-    Id INT,
-    Valor INT,
-    EsFijo BIT
+      Id INT
+    , Valor INT
+    , EsFijo BIT
 )
 WHERE EsFijo = 1;
 

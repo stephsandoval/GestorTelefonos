@@ -36,6 +36,7 @@ CREATE TABLE TipoElemento (
 	IDTipoUnidad INT NOT NULL,
 	Nombre VARCHAR(64) NOT NULL,
 	EsFijo BIT NOT NULL,
+	EsObligatorio BIT NOT NULL,
 	FOREIGN KEY (IDTipoUnidad) REFERENCES TipoUnidad(ID)
 );
 
