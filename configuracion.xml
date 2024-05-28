@@ -32,6 +32,8 @@
 		<TipoElemento Id="11" Nombre="911" Valor="1300" IdTipoUnidad="1" EsFijo="1"/>
 		<TipoElemento Id="12" Nombre="IVA" Valor="13" IdTipoUnidad="3" EsFijo="1"/>
 		<TipoElemento Id="13" Nombre="110" Valor="20" IdTipoUnidad="1" EsFijo="1"/>
+		<TipoElemento Id="14" Nombre="Costo Minuto a Empresa X" Valor="35" IdTipoUnidad="1" EsFijo="1"/>
+		<TipoElemento Id="15" Nombre="Costo Minuto a Empresa Y" Valor="39" IdTipoUnidad="1" EsFijo="1"/>
 	</TiposElemento>
 
 
