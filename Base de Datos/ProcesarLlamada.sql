@@ -54,8 +54,6 @@ BEGIN
 		INNER JOIN dbo.Factura F ON F.IDContrato = C.ID
 		INNER JOIN dbo.Detalle D ON D.IDFactura = F.ID
 
-		SELECT * FROM @LlamadaRegistrada LR WHERE LR.NumeroA NOT LIKE '6%' AND LR.NumeroA NOT LIKE '7%'
-
 		INSERT INTO dbo.LlamadaLocal (
 			  IDLlamada
 			, IDContrato

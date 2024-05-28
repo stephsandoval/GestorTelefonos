@@ -8,6 +8,11 @@ BEGIN
 
 	-- DECLARAR VARIABLES:
 
+	DECLARE @numeroTelefono VARCHAR(32);
+
+	DECLARE @monto800 INT;
+	DECLARE @cantidadLlamadasRecibidas INT;
+
 	DECLARE @montoTotal INT;
 	DECLARE @IDDetalle INT;
 	DECLARE @cantidadLlamada900 INT;
@@ -29,79 +34,117 @@ BEGIN
 
 	-- INICIALIZAR VARIABLES:
 
-	SELECT @tarifaDiurno = ETT.Valor
-	FROM dbo.ElementoDeTipoTarifa ETT
-	INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-	WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 3
+	-- identificar el numero de telefono que se esta revisando
+	SELECT @numeroTelefono = C.NumeroTelefono
+	FROM dbo.Contrato C
+	WHERE C.ID = @inIDContrato
 
-	SELECT @tarifaNocturno = ETT.Valor
-	FROM dbo.ElementoDeTipoTarifa ETT
-	INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-	WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 4
-
-	SELECT @cantidadMinutosBase = ETT.Valor
-	FROM dbo.ElementoDeTipoTarifa ETT
-	INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-	WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 2
-
+	-- obtener el id del detalle asociado con el numero para la factura actual
 	SELECT @IDDetalle = D.ID
 	FROM Detalle D
 	INNER JOIN Factura F ON D.IDFactura = F.ID
 	WHERE @inFechaOperacion = F.FechaFactura AND F.IDContrato = @inIDContrato
 
-	SELECT @cantidadLlamada900 = COUNT(L.ID)
-	FROM dbo.Llamada L
-	INNER JOIN dbo.LlamadaInput LI ON LI.ID = L.IDLlamadaInput
-	WHERE L.IDDetalle = @IDDetalle AND LI.NumeroA LIKE '900%'
+	-- CALCULAR MONTOS:
 
-	SELECT @monto900 = ETT.Valor
-	FROM dbo.ElementoDeTipoTarifa ETT
-	WHERE ETT.IDTipoElemento = 10 AND ETT.IDTipoTarifa = 8
-	 
-	INSERT INTO @LlamadaRegistradaZ (
-		  HoraFin
-		, CantidadMinutos
-	)
-	SELECT LI.HoraFin
-		, L.CantidadMinutos
-	FROM dbo.LlamadaInput LI
-	INNER JOIN dbo.Llamada L ON L.IDLlamadaInput = LI.ID
-	WHERE L.IDDetalle = @IDDetalle AND LI.NumeroA LIKE '8%' AND LEN(LI.NumeroA) = 8
-
-	SET @llamadaActual = 1
-	SELECT @cantidadLlamadas = COUNT(SEC) FROM @LlamadaRegistradaZ
-
-	SET @montoTotal = @cantidadLlamada900 * @monto900
-	SET @cantidadActualMinutos = 0;
-
-	WHILE @llamadaActual <= @cantidadLlamadas
+	-- si el numero es de tipo 800 (paga todas las llamadas, recibidas y hechas)
+	IF (@numeroTelefono LIKE '800%')
 	BEGIN
-		SELECT @cantidadMinutos = LRZ.CantidadMinutos
+		INSERT INTO @LlamadaRegistradaZ (
+			  HoraFin
+			, CantidadMinutos
+		)
+		SELECT LI.HoraFin
+			, L.CantidadMinutos
+		FROM dbo.LlamadaInput LI
+		INNER JOIN dbo.Llamada L ON L.IDLlamadaInput = LI.ID
+		WHERE L.IDDetalle = @IDDetalle
+
+		-- encontrar el monto para las llamadas 800
+		SELECT @monto800 = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		WHERE ETT.IDTipoTarifa = 7 AND ETT.IDTipoElemento = 9
+
+		-- encontrar la cantidad de llamadas asociadas al numero
+		SELECT @cantidadLlamadasRecibidas = SUM(LRZ.CantidadMinutos)
 		FROM @LlamadaRegistradaZ LRZ
-		WHERE LRZ.SEC = @llamadaActual
 
-		DECLARE @x INT;
-		SET @x = @cantidadActualMinutos + @cantidadMinutos;
+		-- calcular el monto total para las llamadas
+		SET @montoTotal = @monto800 * @cantidadLlamadasRecibidas;
+	END
+	ELSE
+	-- si el numero no es de tipo 800
+	BEGIN
+		-- si la llamada es hacia 
+		SELECT @tarifaDiurno = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 3
 
-		IF (@cantidadActualMinutos + @cantidadMinutos > @cantidadMinutosBase)
+		SELECT @tarifaNocturno = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 4
+
+		SELECT @cantidadMinutosBase = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 2
+
+		SELECT @cantidadLlamada900 = COUNT(L.ID)
+		FROM dbo.Llamada L
+		INNER JOIN dbo.LlamadaInput LI ON LI.ID = L.IDLlamadaInput
+		WHERE L.IDDetalle = @IDDetalle AND LI.NumeroA LIKE '900%'
+
+		SELECT @monto900 = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		WHERE ETT.IDTipoElemento = 10 AND ETT.IDTipoTarifa = 8
+	 
+		INSERT INTO @LlamadaRegistradaZ (
+			  HoraFin
+			, CantidadMinutos
+		)
+		SELECT LI.HoraFin
+			, L.CantidadMinutos
+		FROM dbo.LlamadaInput LI
+		INNER JOIN dbo.Llamada L ON L.IDLlamadaInput = LI.ID
+		WHERE L.IDDetalle = @IDDetalle AND LI.NumeroA LIKE '8%' AND LEN(LI.NumeroA) = 8
+
+		SET @llamadaActual = 1
+		SELECT @cantidadLlamadas = COUNT(SEC) FROM @LlamadaRegistradaZ
+
+		SET @montoTotal = @cantidadLlamada900 * @monto900
+		SET @cantidadActualMinutos = 0;
+
+		WHILE @llamadaActual <= @cantidadLlamadas
 		BEGIN
-			SELECT @horaFin = LRZ.HoraFin
+			SELECT @cantidadMinutos = LRZ.CantidadMinutos
 			FROM @LlamadaRegistradaZ LRZ
 			WHERE LRZ.SEC = @llamadaActual
 
-			IF (DATEPART(HOUR, @horaFin) >= 23 OR DATEPART(HOUR, @horaFin) < 5)
+			DECLARE @x INT;
+			SET @x = @cantidadActualMinutos + @cantidadMinutos;
+
+			IF (@cantidadActualMinutos + @cantidadMinutos > @cantidadMinutosBase)
 			BEGIN
-				SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaNocturno;
+				SELECT @horaFin = LRZ.HoraFin
+				FROM @LlamadaRegistradaZ LRZ
+				WHERE LRZ.SEC = @llamadaActual
+
+				IF (DATEPART(HOUR, @horaFin) >= 23 OR DATEPART(HOUR, @horaFin) < 5)
+				BEGIN
+					SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaNocturno;
+				END
+				ELSE
+				BEGIN
+					SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaDiurno;
+				END
 			END
-			ELSE
-			BEGIN
-				SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaDiurno;
-			END
-		END
 		
-		SET @cantidadActualMinutos = @cantidadActualMinutos + @cantidadMinutos
-		SET @llamadaActual = @llamadaActual + 1
-	END;
+			SET @cantidadActualMinutos = @cantidadActualMinutos + @cantidadMinutos
+			SET @llamadaActual = @llamadaActual + 1
+		END;
+	END
 
 	RETURN @montoTotal;
 END
