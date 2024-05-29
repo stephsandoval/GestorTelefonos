@@ -7,6 +7,7 @@ BEGIN
 	BEGIN TRY
 
 		-- DECLARAR VARIABLES:
+
 		DECLARE @LlamadaRegistrada TABLE (
 			  IDLlamadaInput INT
 			, HoraFin DATETIME
@@ -20,7 +21,12 @@ BEGIN
 			, IDLlamadaInput INT
 		);
 
+		-- INICIALIZAR VARIABLES:
+
+		SET @outResultCode = 0
+
 		-- INICIALIZAR TABLAS:
+
 		INSERT INTO @LlamadaRegistrada (
 			  IDLlamadaInput
 			, HoraFin
@@ -44,7 +50,7 @@ BEGIN
 			, IDLlamadaInput
 			, CantidadMinutos
 		)
-		OUTPUT Inserted.ID, Inserted.IDLlamadaInput INTO @NuevaLlamada (IDLlamada, IDLlamadaInput)
+		OUTPUT INSERTED.ID, INSERTED.IDLlamadaInput INTO @NuevaLlamada (IDLlamada, IDLlamadaInput)
 		SELECT 
 			  D.ID
 			, LR.IDLlamadaInput
@@ -64,6 +70,8 @@ BEGIN
 		INNER JOIN @LlamadaRegistrada LR ON LR.IDLlamadaInput = NL.IDLlamadaInput
 		INNER JOIN dbo.Contrato C ON C.NumeroTelefono = LR.NumeroPaga
 		WHERE LR.NumeroA NOT LIKE '6%' AND LR.NumeroA NOT LIKE '7%';
+
+		SELECT @outResultCode AS outResultCode;
 
 	END TRY
     BEGIN CATCH
