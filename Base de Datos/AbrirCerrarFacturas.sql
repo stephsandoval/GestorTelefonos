@@ -91,7 +91,7 @@ BEGIN
 				, 0
 				, 0
 				, 0
-				, dbo.GenerarFechaCierreFactura (@inFechaOperacion)
+				, dbo.GenerarFechaCierreFactura (@inFechaOperacion, CA.IDContrato)
 				, dbo.GenerarFechaPagoFactura (@inFechaOperacion, CA.IDContrato)
 				, 0
 			FROM @ClienteApertura CA
