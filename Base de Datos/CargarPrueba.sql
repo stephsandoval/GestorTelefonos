@@ -37,6 +37,7 @@ BEGIN
 
     DECLARE @PagoFacturas TABLE (
         SEC INT IDENTITY(1,1),
+		FechaFactura DATE,
         NumeroTelefono VARCHAR(32)
     );
 
@@ -83,16 +84,22 @@ BEGIN
 
     -- ----------------------------------------
     -- Cargar informacion de los pagos de facturas
-    INSERT INTO @PagoFacturas (NumeroTelefono)
+    INSERT INTO @PagoFacturas (NumeroTelefono, FechaFactura)
     SELECT 
-        NuevoPago.value('@Numero', 'VARCHAR(32)') AS NumeroTelefono
+        NuevoPago.value('@Numero', 'VARCHAR(32)') AS NumeroTelefono,
+		@fechaActual AS FechaFactura
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/PagoFactura') AS T(NuevoPago);
 
-    SELECT @cantidadPagosFacturas = COUNT(PF.SEC)
+	SELECT * FROM @PagoFacturas
+
+    SELECT @cantidadPagosFacturas = MAX(PF.SEC)
     FROM @PagoFacturas PF;
 
-    SET @pagoActual = 1;
+	SELECT @pagoActual = MIN(PF.SEC)
+	FROM @PagoFacturas PF;
+
+	PRINT @pagoActual
 
     WHILE @pagoActual <= @cantidadPagosFacturas
     BEGIN
@@ -107,6 +114,7 @@ BEGIN
         WHERE C.NumeroTelefono = @numeroActual AND F.EstaPagada = 0;
 
         SET @pagoActual = @pagoActual + 1;
+		DELETE FROM @PagoFacturas WHERE FechaFactura = @fechaActual AND NumeroTelefono = @numeroActual;
     END;
 
     -- ----------------------------------------
