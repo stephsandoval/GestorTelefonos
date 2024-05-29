@@ -50,10 +50,10 @@ BEGIN
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC
 		CROSS APPLY dbo.CalcularMontosFinalesFactura (CC.IDContrato, @inFechaOperacion) MT;
 
-		--INSERT INTO @ClienteApertura (IDContrato)
-		--SELECT C.ID
-		--FROM dbo.Contrato C
-		--WHERE C.FechaContrato = @inFechaOperacion;
+		INSERT INTO @ClienteApertura (IDContrato)
+		SELECT C.ID
+		FROM dbo.Contrato C
+		WHERE C.FechaContrato = @inFechaOperacion;
 
 		INSERT INTO @ClienteApertura (IDContrato)
 		SELECT IDContrato
