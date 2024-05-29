@@ -69,7 +69,8 @@ BEGIN
 				MultaFacturasPrevias = CC.MultaFacturaPrevia,
 				TotalPagar = CC.MontoTotal
 			FROM dbo.Factura F
-			INNER JOIN @ClienteCierre CC ON F.IDContrato = CC.IDContrato;
+			INNER JOIN @ClienteCierre CC ON F.IDContrato = CC.IDContrato
+			WHERE F.FechaFactura = @inFechaOperacion;
 
 			-- abrir nuevas facturas:
 			INSERT INTO dbo.Factura (IDContrato
