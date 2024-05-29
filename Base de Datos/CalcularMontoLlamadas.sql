@@ -59,8 +59,9 @@ BEGIN
 		WHERE ETT.IDTipoTarifa = 7 AND ETT.IDTipoElemento = 9
 
 		-- encontrar la cantidad de llamadas asociadas al numero
-		SELECT @cantidadLlamadasRecibidas = SUM(L.CantidadMinutos)
-		FROM dbo.Llamada L WHERE L.IDDetalle = @IDDetalle
+		SELECT @cantidadLlamadasRecibidas = ISNULL(SUM(L.CantidadMinutos), 0)
+		FROM dbo.Llamada L 
+		WHERE L.IDDetalle = @IDDetalle;
 
 		-- calcular el monto total para las llamadas
 		SET @montoTotal = @monto800 * @cantidadLlamadasRecibidas;
