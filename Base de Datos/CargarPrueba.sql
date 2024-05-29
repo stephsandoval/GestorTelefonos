@@ -138,6 +138,11 @@ BEGIN
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
 
+	-- ----------------------------------------
+	-- procesar datos:
+
+	EXEC dbo.ProcesarUsoDatos @fechaActual, @outResultCode OUTPUT;
+
     DELETE FROM @FechaOperacion WHERE Fecha = @fechaActual;
     DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;
 END;
