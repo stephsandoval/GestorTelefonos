@@ -91,15 +91,11 @@ BEGIN
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/PagoFactura') AS T(NuevoPago);
 
-	SELECT * FROM @PagoFacturas
-
     SELECT @cantidadPagosFacturas = MAX(PF.SEC)
     FROM @PagoFacturas PF;
 
 	SELECT @pagoActual = MIN(PF.SEC)
 	FROM @PagoFacturas PF;
-
-	PRINT @pagoActual
 
     WHILE @pagoActual <= @cantidadPagosFacturas
     BEGIN
