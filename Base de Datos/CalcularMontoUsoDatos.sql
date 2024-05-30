@@ -8,9 +8,9 @@ BEGIN
 
     -- DECLARAR VARIABLES:
     DECLARE @IDDetalle INT;
-    DECLARE @tarifaDatos MONEY;
+    DECLARE @tarifaDatos MONEY = 0;
     DECLARE @cantidadDatos FLOAT = 0;
-    DECLARE @cantidadDatosBase FLOAT;
+    DECLARE @cantidadDatosBase FLOAT = 0;
     DECLARE @montoTotal MONEY = 0;
 
     -- INICIALIZAR VARIABLES:
@@ -30,7 +30,7 @@ BEGIN
     INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
     WHERE C.ID = @inIDContrato AND ETT.IDTipoElemento = 5;
 
-    SELECT @cantidadDatos = SUM(UD.CantidadDatos)
+    SELECT @cantidadDatos = ISNULL(SUM(UD.CantidadDatos), 0)
 	FROM dbo.UsoDatos UD
 	WHERE UD.IDDetalle = @IDDetalle;
 
