@@ -15,6 +15,7 @@ BEGIN
 
 	DECLARE @montoAntesIVA MONEY;
 	DECLARE @montoLlamadas MONEY;
+	DECLARE @montoDatos MONEY;
 
 	DECLARE @IDFactura INT;
 	DECLARE @IDDetalle INT;
@@ -37,8 +38,9 @@ BEGIN
 	WHERE F.IDContrato = @inIDContrato
 
 	SELECT @montoLlamadas = dbo.CalcularMontoLlamadas (@inIDContrato, @inFechaOperacion)
+	SELECT @montoDatos = dbo.CalcularMontoUsoDatos (@inIDContrato, @inFechaOperacion)
 
-	SET @montoAntesIVA = @montoAntesIVA + @montoLlamadas
+	SET @montoAntesIVA = @montoAntesIVA + @montoLlamadas + @montoDatos
 
 	SELECT @IDFactura = F.ID
 	FROM Factura F
