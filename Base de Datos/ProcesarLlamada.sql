@@ -45,20 +45,23 @@ BEGIN
 		FROM dbo.LlamadaInput LI
 		WHERE CONVERT(DATE, LI.HoraInicio) = @inFechaOperacion
 
+		
 		INSERT INTO dbo.Llamada (
-			  IDDetalle
+				IDDetalle
 			, IDLlamadaInput
 			, CantidadMinutos
 		)
 		OUTPUT INSERTED.ID, INSERTED.IDLlamadaInput INTO @NuevaLlamada (IDLlamada, IDLlamadaInput)
 		SELECT 
-			  D.ID
+			  (SELECT TOP(1) D.ID
+				FROM @LlamadaRegistrada LR
+				INNER JOIN dbo.Contrato C ON C.NumeroTelefono = LR.NumeroPaga
+				INNER JOIN dbo.Factura F ON F.IDContrato = C.ID
+				INNER JOIN dbo.Detalle D ON D.IDFactura = F.ID
+				WHERE F.FechaFactura > @inFechaOperacion) AS IDDetalle
 			, LR.IDLlamadaInput
 			, LR.CantidadMinutos
 		FROM @LlamadaRegistrada LR
-		INNER JOIN dbo.Contrato C ON C.NumeroTelefono = LR.NumeroPaga
-		INNER JOIN dbo.Factura F ON F.IDContrato = C.ID
-		INNER JOIN dbo.Detalle D ON D.IDFactura = F.ID
 
 		INSERT INTO dbo.LlamadaLocal (
 			  IDLlamada
