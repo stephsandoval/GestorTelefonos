@@ -203,6 +203,8 @@ CREATE TABLE EstadoCuenta (
 	IDOperador INT NOT NULL,
 	TotalLlamadasEntrantes INT NOT NULL,
 	TotalLlamadasSalientes INT NOT NULL,
+	FechaApertura DATE NOT NULL,
+	FechaCierre DATE NOT NULL,
 	FOREIGN KEY (IDOperador) REFERENCES Operador(ID)
 );
 

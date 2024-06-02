@@ -119,3 +119,9 @@ EXEC sp_xml_removedocument @value;
 --SELECT * FROM dbo.TipoRelacionFamiliar
 --SELECT * FROM dbo.TipoUnidad
 --SELECT * FROM dbo.ElementoDeTipoTarifa
+
+INSERT INTO Operador (Nombre, DigitoPrefijo)
+VALUES
+    ('Empresa Z', 8),
+    ('Empresa X', 7),
+    ('Empresa Y', 6);
