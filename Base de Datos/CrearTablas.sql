@@ -17,7 +17,7 @@ GO
 -- tabla de tipos de tarifa:
 CREATE TABLE TipoTarifa (
 	ID INT NOT NULL PRIMARY KEY,
-	Nombre VARCHAR(64) NOT NULL
+	Nombre VARCHAR(32) NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -25,7 +25,7 @@ CREATE TABLE TipoTarifa (
 -- tabla de tipos de unidad:
 CREATE TABLE TipoUnidad (
 	ID INT NOT NULL PRIMARY KEY,
-	Nombre VARCHAR(64) NOT NULL
+	Nombre VARCHAR(32) NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -34,9 +34,8 @@ CREATE TABLE TipoUnidad (
 CREATE TABLE TipoElemento (
 	ID INT NOT NULL PRIMARY KEY,
 	IDTipoUnidad INT NOT NULL,
-	Nombre VARCHAR(64) NOT NULL,
-	EsFijo BIT NOT NULL,
-	EsObligatorio BIT NOT NULL,
+	Nombre VARCHAR(32) NOT NULL,
+	EsFijo BIT NOT NULL
 	FOREIGN KEY (IDTipoUnidad) REFERENCES TipoUnidad(ID)
 );
 
@@ -55,7 +54,7 @@ CREATE TABLE TipoElementoFijo (
 -- tabla de tipos de relacion familiar:
 CREATE TABLE TipoRelacionFamiliar (
 	ID INT NOT NULL PRIMARY KEY,
-	Nombre VARCHAR(64) NOT NULL
+	Nombre VARCHAR(32) NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -76,7 +75,7 @@ CREATE TABLE ElementoDeTipoTarifa (
 CREATE TABLE Cliente (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Identificacion VARCHAR(16) NOT NULL,
-	Nombre VARCHAR(64) NOT NULL
+	Nombre VARCHAR(32) NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -99,7 +98,7 @@ CREATE TABLE Contrato (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDTipoTarifa INT NOT NULL,
 	IDCliente INT NOT NULL,
-	NumeroTelefono VARCHAR(32) NOT NULL,
+	NumeroTelefono VARCHAR(16) NOT NULL,
 	FechaContrato DATE NOT NULL,
 	FOREIGN KEY (IDTipoTarifa) REFERENCES TipoTarifa(ID),          -- FK a tipo tarifa
 	FOREIGN KEY (IDCliente) REFERENCES Cliente(ID)                 -- FK a cliente
@@ -111,10 +110,10 @@ CREATE TABLE Contrato (
 CREATE TABLE Factura (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDContrato INT NOT NULL,
-	TotalPagarAntesIVA MONEY NOT NULL,
-	TotalPagarDespuesIVA MONEY NOT NULL,
+	TotalAntesIVA MONEY NOT NULL,
+	TotalDespuesIVA MONEY NOT NULL,
 	MultaFacturasPrevias MONEY NOT NULL,
-	TotalPagar MONEY NOT NULL,
+	Total MONEY NOT NULL,
 	FechaFactura DATE NOT NULL,
 	FechaPago DATE NOT NULL,
 	EstaPagada BIT NOT NULL,
@@ -137,14 +136,14 @@ CREATE TABLE LlamadaInput (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	HoraInicio DATETIME NOT NULL,
 	HoraFin DATETIME NOT NULL,
-	NumeroDesde VARCHAR(32) NOT NULL,
-	NumeroA VARCHAR(32) NOT NULL
+	NumeroDesde VARCHAR(16) NOT NULL,
+	NumeroA VARCHAR(16) NOT NULL
 );
 
 -- ---------------------------------------- --
 
 -- tabla de llamadas realizadas
-CREATE TABLE Llamada (
+CREATE TABLE LlamadaLocal (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDDetalle INT NOT NULL,
 	IDLlamadaInput INT NOT NULL,
@@ -159,8 +158,8 @@ CREATE TABLE Llamada (
 CREATE TABLE UsoDatosInput (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Fecha DATE NOT NULL,
-	NumeroTelefono VARCHAR(32) NOT NULL,
-	CantidadGigas FLOAT NOT NULL
+	NumeroTelefono VARCHAR(16) NOT NULL,
+	CantidadDatos FLOAT NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -181,20 +180,10 @@ CREATE TABLE UsoDatos (
 CREATE TABLE CobroFijo (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDDetalle INT NOT NULL,
-	IDElementoDeTipoTarifa INT NOT NULL,
-	FOREIGN KEY (IDDetalle) REFERENCES Detalle(ID),
-	FOREIGN KEY (IDElementoDeTipoTarifa) REFERENCES ElementoDeTipoTarifa(ID)
-);
-
--- ---------------------------------------- --
-
--- tabla de llamadas locales realizadas
-CREATE TABLE LlamadaLocal (
-	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	IDContrato INT NOT NULL,
-	IDLlamada INT NOT NULL,
-	FOREIGN KEY (IDContrato) REFERENCES Contrato(ID),
-	FOREIGN KEY (IDLlamada) REFERENCES Llamada(ID)
+	TotalLlamadas911 INT NOT NULL,
+	TotalMinutos110 INT NOT NULL,
+	TotalMinutos900 INT NOT NULL,
+	FOREIGN KEY (IDDetalle) REFERENCES Detalle(ID)
 );
 
 -- ---------------------------------------- --
@@ -208,49 +197,35 @@ CREATE TABLE Operador (
 
 -- ---------------------------------------- --
 
--- tabla del estado de cuenta de los telefonos asociados a los operadores
-CREATE TABLE TelefonoEstadoCuenta (
-	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	Numero VARCHAR(32) NOT NULL,
-	CantidadMinutosEntrantes INT NOT NULL,
-	CantidadMinutosSalientes INT NOT NULL
-);
-
--- ---------------------------------------- --
-
 -- tabla del estado de cuenta de los operadores
-CREATE TABLE OperadorEstadoCuenta (
+CREATE TABLE EstadoCuenta (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDOperador INT NOT NULL,
-	IDTelefono INT NOT NULL,
 	TotalLlamadasEntrantes INT NOT NULL,
 	TotalLlamadasSalientes INT NOT NULL,
-	FOREIGN KEY (IDOperador) REFERENCES Operador(ID),
-	FOREIGN KEY (IDTelefono) REFERENCES TelefonoEstadoCuenta(ID)
-);
-
--- ---------------------------------------- --
-
--- tabla de los tipos de llamada del operador
-CREATE TABLE TipoLlamadaOperador (
-	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	Nombre VARCHAR(32)
+	FOREIGN KEY (IDOperador) REFERENCES Operador(ID)
 );
 
 -- ---------------------------------------- --
 
 -- tabla de detalles del estado de cuenta del operador
-CREATE TABLE DetalleOperadorEstadoCuenta (
+CREATE TABLE DetalleEstadoCuenta (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	IDOperadorEstadoCuenta INT NOT NULL,
-	IDTelefonoEstadoCuenta INT NOT NULL,
-	IDTipoLlamadaOperador INT NOT NULL,
-	IDLlamadaInput INT NOT NULL,
+	IDEstadoCuenta INT NOT NULL,
 	CantidadMinutos INT NOT NULL,
-	FOREIGN KEY (IDOperadorEstadoCuenta) REFERENCES OperadorEstadoCuenta(ID),
-	FOREIGN KEY (IDTelefonoEstadoCuenta) REFERENCES TelefonoEstadoCuenta(ID),
-	FOREIGN KEY (IDTipoLlamadaOperador) REFERENCES TipoLlamadaOperador(ID),
-	FOREIGN KEY (IDLlamadaInput) REFERENCES LlamadaInput(ID)
+	FOREIGN KEY (IDEstadoCuenta) REFERENCES EstadoCuenta(ID)
+);
+
+-- ---------------------------------------- --
+
+-- tabla del estado de cuenta de los telefonos asociados a los operadores
+CREATE TABLE TelefonoEstadoCuenta (
+	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
+	IDEstadoCuenta INT NOT NULL,
+	NumeroTelefono VARCHAR(16) NOT NULL,
+	CantidadMinutosEntrantes INT NOT NULL,
+	CantidadMinutosSalientes INT NOT NULL,
+	FOREIGN KEY (IDEstadoCuenta) REFERENCES EstadoCuenta(ID)
 );
 
 -- ---------------------------------------- --
@@ -258,10 +233,11 @@ CREATE TABLE DetalleOperadorEstadoCuenta (
 -- tabla de llamadas no locales realizadas
 CREATE TABLE LlamadaNoLocal (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	IDLlamada INT NOT NULL,
-	IDDetalleOperadorEstadoCuenta INT NOT NULL,
-	FOREIGN KEY (IDDetalleOperadorEstadoCuenta) REFERENCES DetalleOperadorEstadoCuenta(ID),
-	FOREIGN KEY (IDLlamada) REFERENCES Llamada(ID)
+	IDLlamadaInput INT NOT NULL,
+	IDTelefonoEstadoCuenta INT NOT NULL,
+	CantidadMinutos INT NOT NULL,
+	FOREIGN KEY (IDTelefonoEstadoCuenta) REFERENCES TelefonoEstadoCuenta(ID),
+	FOREIGN KEY (IDLlamadaInput) REFERENCES LlamadaInput(ID)
 );
 
 -- ************************************************************* --
@@ -270,25 +246,23 @@ CREATE TABLE LlamadaNoLocal (
 -- codigo para eliminar las tablas en caso de necesidad
 
 --DROP TABLE LlamadaNoLocal;
---DROP TABLE DetalleOperadorEstadoCuenta;
---DROP TABLE TipoLlamadaOperador;
+--DROP TABLE DetalleEstadoCuenta;
 --DROP TABLE UsoDatos;
 --DROP TABLE UsoDatosInput;
 --DROP TABLE CobroFijo;
---DROP TABLE OperadorEstadoCuenta;
---DROP TABLE Operador;
---DROP TABLE LlamadaLocal;
 --DROP TABLE Parentesco;
 --DROP TABLE ElementoDeTipoTarifa;
 --DROP TABLE TipoRelacionFamiliar;
 --DROP TABLE TipoElementoFijo;
 --DROP TABLE TipoElemento;
 --DROP TABLE TipoUnidad;
---DROP TABLE Llamada;
 --DROP TABLE TelefonoEstadoCuenta;
---DROP TABLE Detalle;
+--DROP TABLE LlamadaLocal;
 --DROP TABLE LlamadaInput;
+--DROP TABLE Detalle;
 --DROP TABLE Factura;
 --DROP TABLE Contrato;
 --DROP TABLE Cliente;
 --DROP TABLE TipoTarifa;
+--DROP TABLE EstadoCuenta;
+--DROP TABLE Operador;

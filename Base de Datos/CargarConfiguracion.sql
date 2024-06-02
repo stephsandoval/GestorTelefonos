@@ -42,13 +42,12 @@ WITH (
 -- ---------------------------------------- --
 
 -- ingresar informacion de la seccion TiposElemento en la tabla TipoElemento
-INSERT INTO dbo.TipoElemento (ID, IDTipoUnidad, Nombre, EsFijo, EsObligatorio)
+INSERT INTO dbo.TipoElemento (ID, IDTipoUnidad, Nombre, EsFijo)
 SELECT 
       Id
     , IdTipoUnidad
     , Nombre
     , EsFijo
-	, CASE WHEN Id IN (11, 12, 13) THEN 1 ELSE 0 END AS EsObligatorio
 FROM OPENXML (@value, '/Data/TiposElemento/TipoElemento', 1)
 WITH (
       Id INT

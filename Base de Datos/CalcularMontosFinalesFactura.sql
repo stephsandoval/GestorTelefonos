@@ -5,7 +5,6 @@ ALTER FUNCTION dbo.CalcularMontosFinalesFactura (
 RETURNS @MontoFactura TABLE (
 	  MontoAntesIVA MONEY
 	, MontoDespuesIVA MONEY
-	, MultaFacturasPendientes MONEY
 	, MontoTotal MONEY
 )
 AS
@@ -19,21 +18,14 @@ BEGIN
 
 	DECLARE @IDFactura INT;
 	DECLARE @IDDetalle INT;
-	DECLARE @montoFijo MONEY;
 
 	DECLARE @porcentajeIVA FLOAT;
 	DECLARE @montoDespuesIVA MONEY;
 
-	DECLARE @cantidadFacturasPendientes INT;
-	DECLARE @multaFacturasPendientes MONEY;
-	DECLARE @valorMulta INT;
-
-	DECLARE @montoTotal MONEY;
-
 	-- INICIALIZAR VARIABLES:
 
 	-- calcular el monto antes de aplicar IVA:
-	SELECT @montoAntesIVA = F.TotalPagarAntesIVA 
+	SELECT @montoAntesIVA = F.TotalAntesIVA 
 	FROM Factura F
 	WHERE F.IDContrato = @inIDContrato
 
@@ -50,51 +42,24 @@ BEGIN
 	FROM dbo.Detalle D
 	WHERE D.IDFactura = @IDFactura
 
-	SELECT @montoFijo = SUM(ETT.Valor)
-	FROM CobroFijo CF
-	INNER JOIN ElementoDeTipoTarifa ETT ON ETT.ID = CF.IDElementoDeTipoTarifa
-	INNER JOIN TipoElemento TE ON TE.ID = ETT.IDTipoElemento
-	WHERE CF.IDDetalle = @IDDetalle AND TE.IDTipoUnidad = 1;
-
-	SET @montoAntesIVA = @montoAntesIVA + @montoFijo;
-
 	-- calcular el monto despues de aplicar IVA:
 	SELECT @porcentajeIVA = ETT.Valor
-	FROM CobroFijo CF
-	INNER JOIN ElementoDeTipoTarifa ETT ON ETT.ID = CF.IDElementoDeTipoTarifa
-	INNER JOIN TipoElemento TE ON TE.ID = ETT.IDTipoElemento
-	WHERE CF.IDDetalle = @IDDetalle AND TE.IDTipoUnidad = 3;
+	FROM dbo.ElementoDeTipoTarifa ETT
+	INNER JOIN dbo.Contrato C ON C.ID = @inIDContrato
+	WHERE C.IDTipoTarifa = ETT.IDTipoTarifa AND ETT.IDTipoElemento = 12
 
 	SET @porcentajeIVA = (@porcentajeIVA + 100) / 100
 	SET @montoDespuesIVA = @montoAntesIVA * @porcentajeIVA
 
-	-- calcular el monto por facturas pendientes:
-	SET @valorMulta = 0;
-
-	SELECT @cantidadFacturasPendientes = COUNT(F.ID)
-	FROM Factura F
-	WHERE F.IDContrato = @inIDContrato AND F.EstaPagada = 0
-
-	SELECT @valorMulta = ETT.Valor
-	FROM ElementoDeTipoTarifa ETT
-	INNER JOIN Contrato C ON C.ID = @inIDContrato
-	WHERE ETT.IDTipoElemento = 8 AND ETT.IDTipoTarifa = C.IDTipoTarifa
-
-	SET @multaFacturasPendientes = @cantidadFacturasPendientes * @valorMulta;
-
-	-- calcular el monto total:
-	SET @montoTotal = @montoDespuesIVA + @multaFacturasPendientes;
-
 	-- INSERTAR DATOS EN TABLA DE RETORNO:
-	INSERT INTO @MontoFactura (MontoAntesIVA
+	INSERT INTO @MontoFactura (
+		  MontoAntesIVA
 		, MontoDespuesIVA
-		, MultaFacturasPendientes
 		, MontoTotal
 	)
 	VALUES (@montoAntesIVA
 		, @montoDespuesIVA
-		, @multaFacturasPendientes
-		, @montoTotal
+		, @montoDespuesIVA
 	)
 
 	RETURN;

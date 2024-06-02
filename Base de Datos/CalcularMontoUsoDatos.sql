@@ -34,7 +34,10 @@ BEGIN
 	FROM dbo.UsoDatos UD
 	WHERE UD.IDDetalle = @IDDetalle;
 
-	SET @montoTotal = (@cantidadDatos - @cantidadDatosBase) * @tarifaDatos;
+	IF (@cantidadDatos > @cantidadDatosBase)
+	BEGIN
+		SET @montoTotal = (@cantidadDatos - @cantidadDatosBase) * @tarifaDatos;
+	END
 
     RETURN @montoTotal;
 END;

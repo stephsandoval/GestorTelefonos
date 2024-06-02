@@ -11,7 +11,7 @@
 -- Se abre y cierra factura con base en el dia en que se firma el contrato
 	-- Por ejemplo, un contrato firmado el 30 de enero, cierra los dias 30
 	-- Se toma cierta precaucion para meses que tienen menos de 30 dias (febrero)
-	-- En dicho mes, la factura cerraria el dia 28 o 29 segun el tipo de aÃ±o
+	-- En dicho mes, la factura cerraria el dia 28 o 29 segun el tipo de año
 	-- Una logica similar se aplica para los demas dias
 -- Abrir una factura tambien implica abrir un nuevo detalle e instancias de cobro fijo
 
@@ -36,10 +36,6 @@
 -- esto porque, independientemente de lo que pase, eventualmente se les tiene que sumar
 -- resulta mas facil hacerlo justo cuando se abren
 
--- finalmente, cabe notar que tambien se abren las instancias en la tabla CobroFijo
--- esto para aprovechar los IDs que se pueden recolectar aqui
--- (luego de haber generado la instancia en Detalle propiamente)
-
 -- ************************************************************* --
 
 ALTER PROCEDURE dbo.AbrirCerrarFacturas
@@ -57,7 +53,6 @@ BEGIN
             , IDContrato INT
 			, MontoAntesIVA MONEY
 			, MontoDespuesIVA MONEY
-			, MultaFacturaPrevia MONEY
 			, MontoTotal MONEY
         );
 
@@ -93,13 +88,11 @@ BEGIN
 			  IDContrato
 			, MontoAntesIVA
 			, MontoDespuesIVA
-			, MultaFacturaPrevia
 			, MontoTotal
 		)
 		SELECT CC.IDContrato
 			, MT.MontoAntesIVA
 			, MT.MontoDespuesIVA
-			, MT.MultaFacturasPendientes
 			, MT.MontoTotal
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC
 		CROSS APPLY dbo.CalcularMontosFinalesFactura (CC.IDContrato, @inFechaOperacion) MT;
@@ -127,10 +120,9 @@ BEGIN
 
 			UPDATE F
 			SET 
-				TotalPagarAntesIVA = CC.MontoAntesIVA,
-				TotalPagarDespuesIVA = CC.MontoDespuesIVA,
-				MultaFacturasPrevias = CC.MultaFacturaPrevia,
-				TotalPagar = CC.MontoTotal
+				  TotalAntesIVA = CC.MontoAntesIVA
+				, TotalDespuesIVA = CC.MontoDespuesIVA
+				, Total = CC.MontoTotal
 			FROM dbo.Factura F
 			INNER JOIN @ClienteCierre CC ON F.IDContrato = CC.IDContrato
 			WHERE F.FechaFactura = @inFechaOperacion;
@@ -140,10 +132,10 @@ BEGIN
 				-- utiliza el OUTPUT para almacenar los IDs de las facturas que se generan
 
 			INSERT INTO dbo.Factura (IDContrato
-				, TotalPagarAntesIVA
-				, TotalPagarDespuesIVA
+				, TotalAntesIVA
+				, TotalDespuesIVA
 				, MultaFacturasPrevias
-				, TotalPagar
+				, Total
 				, FechaFactura
 				, FechaPago
 				, EstaPagada
@@ -176,21 +168,6 @@ BEGIN
 			OUTPUT INSERTED.ID, INSERTED.IDFactura INTO @NuevoDetalle (IDDetalle, IDFactura) 
             SELECT NF.IDFactura
             FROM @NuevaFactura NF;
-
-			-- ------------------------------------------------ --
-			-- abrir nuevas instancias de cobro fijo:
-				-- utiliza los IDs capturados anteriormente para establecer las FKs
-
-			INSERT INTO dbo.CobroFijo (IDDetalle
-				, IDElementoDeTipoTarifa)
-            SELECT ND.IDDetalle
-				, ETT.ID
-            FROM @NuevoDetalle ND
-            INNER JOIN dbo.Factura F ON ND.IDFactura = F.ID
-            INNER JOIN dbo.Contrato C ON F.IDContrato = C.ID
-			INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
-			INNER JOIN dbo.TipoElemento TE ON ETT.IDTipoElemento = TE.ID
-            WHERE TE.EsObligatorio = 1;
 
 		COMMIT TRANSACTION tOperarFactura
 

@@ -19,7 +19,7 @@ BEGIN
 		)
 		SELECT D.ID
 			, UDI.ID
-			, UDI.CantidadGigas
+			, UDI.CantidadDatos
 		FROM dbo.UsoDatosInput UDI
 		INNER JOIN dbo.Contrato C ON C.NumeroTelefono = UDI.NumeroTelefono
 		INNER JOIN (
