@@ -122,9 +122,9 @@ EXEC sp_xml_removedocument @value;
 
 INSERT INTO Operador (Nombre, DigitoPrefijo)
 VALUES
-    ('Empresa Z', 8),
-    ('Empresa X', 7),
-    ('Empresa Y', 6);
+    ('Empresa Z', '8'),
+    ('Empresa X', '7'),
+    ('Empresa Y', '6');
 
 INSERT INTO TipoLlamada (Nombre)
 VALUES

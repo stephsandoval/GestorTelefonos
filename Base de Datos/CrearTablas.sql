@@ -192,7 +192,7 @@ CREATE TABLE CobroFijo (
 CREATE TABLE Operador (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Nombre VARCHAR(64) NOT NULL,
-	DigitoPrefijo INT NOT NULL
+	DigitoPrefijo CHAR NOT NULL
 );
 
 -- ---------------------------------------- --
@@ -223,11 +223,11 @@ CREATE TABLE DetalleEstadoCuenta (
 -- tabla del estado de cuenta de los telefonos asociados a los operadores
 CREATE TABLE TelefonoEstadoCuenta (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
-	IDEstadoCuenta INT NOT NULL,
+	IDDetalleEstadoCuenta INT NOT NULL,
 	NumeroTelefono VARCHAR(16) NOT NULL,
 	CantidadMinutosEntrantes INT NOT NULL,
 	CantidadMinutosSalientes INT NOT NULL,
-	FOREIGN KEY (IDEstadoCuenta) REFERENCES EstadoCuenta(ID)
+	FOREIGN KEY (IDDetalleEstadoCuenta) REFERENCES DetalleEstadoCuenta(ID)
 );
 
 -- ---------------------------------------- --
