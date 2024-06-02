@@ -30,14 +30,12 @@ BEGIN
 		INSERT INTO @operadorApertura (IDOperador, Nombre)
 		SELECT O.ID, O.Nombre
 		FROM dbo.Operador O
-		WHERE O.DigitoPrefijo = 8
 
 		IF EXISTS (SELECT 1 FROM dbo.EstadoCuenta)
 		BEGIN
 			INSERT INTO @operadorCierre (IDOperador, Nombre)
 			SELECT O.ID, O.Nombre
 			FROM dbo.Operador O
-			WHERE O.DigitoPrefijo = 8
 		END
 
 		SELECT * FROM @operadorApertura;
@@ -47,15 +45,15 @@ BEGIN
 
 			UPDATE EC
 			SET
-				  TotalLlamadasEntrantes = -1
-				, TotalLlamadasSalientes = -1
+				  TotalMinutosEntrantes = -1
+				, TotalMinutosSalientes = -1
 			FROM dbo.EstadoCuenta EC
 			WHERE EC.FechaCierre = @inFechaOperacion;
 
 			INSERT INTO dbo.EstadoCuenta (
 				  IDOperador
-				, TotalLlamadasEntrantes
-				, TotalLlamadasSalientes
+				, TotalMinutosEntrantes
+				, TotalMinutosSalientes
 				, FechaApertura
 				, FechaCierre
 			)

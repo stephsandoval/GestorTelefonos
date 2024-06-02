@@ -70,7 +70,9 @@ BEGIN
 
     -- ----------------------------------------
     -- Abrir o cerrar una nueva factura para los contratos
+
     EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
+	EXEC dbo.AbrirCerrarEstadosCuenta @fechaActual, @outResultCode OUTPUT;
 
 	-- ----------------------------------------
 	-- procesar multas:

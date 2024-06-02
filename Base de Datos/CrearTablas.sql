@@ -201,8 +201,8 @@ CREATE TABLE Operador (
 CREATE TABLE EstadoCuenta (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDOperador INT NOT NULL,
-	TotalLlamadasEntrantes INT NOT NULL,
-	TotalLlamadasSalientes INT NOT NULL,
+	TotalMinutosEntrantes INT NOT NULL,
+	TotalMinutosSalientes INT NOT NULL,
 	FechaApertura DATE NOT NULL,
 	FechaCierre DATE NOT NULL,
 	FOREIGN KEY (IDOperador) REFERENCES Operador(ID)
@@ -232,14 +232,24 @@ CREATE TABLE TelefonoEstadoCuenta (
 
 -- ---------------------------------------- --
 
+-- tabla de tipos de llamada para los operadores
+CREATE TABLE TipoLlamada (
+	  ID INT NOT NULL PRIMARY KEY IDENTITY(1,1)
+	, Nombre VARCHAR(16)
+)
+
+-- ---------------------------------------- --
+
 -- tabla de llamadas no locales realizadas
 CREATE TABLE LlamadaNoLocal (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDLlamadaInput INT NOT NULL,
 	IDTelefonoEstadoCuenta INT NOT NULL,
+	IDTipoLlamada INT NOT NULL,
 	CantidadMinutos INT NOT NULL,
 	FOREIGN KEY (IDTelefonoEstadoCuenta) REFERENCES TelefonoEstadoCuenta(ID),
-	FOREIGN KEY (IDLlamadaInput) REFERENCES LlamadaInput(ID)
+	FOREIGN KEY (IDLlamadaInput) REFERENCES LlamadaInput(ID),
+	FOREIGN KEY (IDTipoLlamada) REFERENCES TipoLlamada(ID)
 );
 
 -- ************************************************************* --
@@ -248,6 +258,7 @@ CREATE TABLE LlamadaNoLocal (
 -- codigo para eliminar las tablas en caso de necesidad
 
 --DROP TABLE LlamadaNoLocal;
+--DROP TABLE TipoLlamada;
 --DROP TABLE DetalleEstadoCuenta;
 --DROP TABLE UsoDatos;
 --DROP TABLE UsoDatosInput;
