@@ -114,7 +114,7 @@ BEGIN
 		-- ------------------------------------------------------------- --
 		-- ABRIR Y CERRAR FACTURAS:
 
-		BEGIN TRANSACTION tOperarFactura
+		BEGIN TRANSACTION tProcesarFactura
 
 			-- cerrar facturas:
 
@@ -169,7 +169,7 @@ BEGIN
             SELECT NF.IDFactura
             FROM @NuevaFactura NF;
 
-		COMMIT TRANSACTION tOperarFactura
+		COMMIT TRANSACTION tProcesarFactura
 
 		-- ------------------------------------------------------------- --
 
@@ -179,7 +179,7 @@ BEGIN
     BEGIN CATCH
 
 		IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION tOperarFactura;
+            ROLLBACK TRANSACTION tProcesarFactura;
 
         INSERT INTO ErrorBaseDatos VALUES (
 			SUSER_SNAME(),

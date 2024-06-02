@@ -11,7 +11,7 @@ DECLARE @outResultCode INT;
 -- INICIALIZAR VARIABLES PARA EL ARCHIVO:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\operaciones.xml', SINGLE_BLOB) AS xmlfile(X);
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\prueba.xml', SINGLE_BLOB) AS xmlfile(X);
 
 -- preparar el archivo xml:
 DECLARE @value INT;
@@ -34,16 +34,6 @@ BEGIN
         Fecha DATE,
         Operacion XML
     );
-
-    DECLARE @PagoFacturas TABLE (
-        SEC INT IDENTITY(1,1),
-		FechaFactura DATE,
-        NumeroTelefono VARCHAR(32)
-    );
-
-    DECLARE @cantidadPagosFacturas INT;
-    DECLARE @pagoActual INT;
-    DECLARE @numeroActual VARCHAR(32);
 
     -- ------------------------------------------------ --
     -- INICIALIZAR VARIABLES:
@@ -89,34 +79,8 @@ BEGIN
 
     -- ----------------------------------------
     -- Cargar informacion de los pagos de facturas
-    INSERT INTO @PagoFacturas (NumeroTelefono, FechaFactura)
-    SELECT 
-        NuevoPago.value('@Numero', 'VARCHAR(32)') AS NumeroTelefono,
-		@fechaActual AS FechaFactura
-    FROM @OperacionDiaria AS O
-    CROSS APPLY O.Operacion.nodes('/FechaOperacion/PagoFactura') AS T(NuevoPago);
-
-    SELECT @cantidadPagosFacturas = MAX(PF.SEC)
-    FROM @PagoFacturas PF;
-
-	SELECT @pagoActual = MIN(PF.SEC)
-	FROM @PagoFacturas PF;
-
-    WHILE @pagoActual <= @cantidadPagosFacturas
-    BEGIN
-        SELECT @numeroActual = PF.NumeroTelefono
-        FROM @PagoFacturas PF
-        WHERE PF.SEC = @pagoActual;
-
-        UPDATE TOP (1) F
-        SET F.EstaPagada = 1
-        FROM dbo.Factura F
-        INNER JOIN dbo.Contrato C ON C.ID = F.IDContrato
-        WHERE C.NumeroTelefono = @numeroActual AND F.EstaPagada = 0;
-
-        SET @pagoActual = @pagoActual + 1;
-		DELETE FROM @PagoFacturas WHERE FechaFactura = @fechaActual AND NumeroTelefono = @numeroActual;
-    END;
+    
+	EXEC dbo.ProcesarPagoFactura @xmlData, @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
     -- Cargar informacion de llamadas
