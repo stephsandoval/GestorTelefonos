@@ -120,11 +120,11 @@ EXEC sp_xml_removedocument @value;
 --SELECT * FROM dbo.TipoUnidad
 --SELECT * FROM dbo.ElementoDeTipoTarifa
 
-INSERT INTO Operador (Nombre, DigitoPrefijo)
+INSERT INTO Operador (Nombre, DigitoPrefijoPrincipal, DigitoPrefijoSecundario)
 VALUES
-    ('Empresa Z', '8'),
-    ('Empresa X', '7'),
-    ('Empresa Y', '6');
+    ('Empresa Z', '8', '9'),
+    ('Empresa X', '7', NULL),
+    ('Empresa Y', '6', NULL);
 
 INSERT INTO TipoLlamada (Nombre)
 VALUES

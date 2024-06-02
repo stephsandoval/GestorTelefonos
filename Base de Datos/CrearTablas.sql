@@ -192,7 +192,8 @@ CREATE TABLE CobroFijo (
 CREATE TABLE Operador (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	Nombre VARCHAR(64) NOT NULL,
-	DigitoPrefijo CHAR NOT NULL
+	DigitoPrefijoPrincipal CHAR NOT NULL,
+	DigitoPrefijoSecundario CHAR
 );
 
 -- ---------------------------------------- --
@@ -259,7 +260,6 @@ CREATE TABLE LlamadaNoLocal (
 
 --DROP TABLE LlamadaNoLocal;
 --DROP TABLE TipoLlamada;
---DROP TABLE DetalleEstadoCuenta;
 --DROP TABLE UsoDatos;
 --DROP TABLE UsoDatosInput;
 --DROP TABLE CobroFijo;
@@ -277,5 +277,6 @@ CREATE TABLE LlamadaNoLocal (
 --DROP TABLE Contrato;
 --DROP TABLE Cliente;
 --DROP TABLE TipoTarifa;
+--DROP TABLE DetalleEstadoCuenta;
 --DROP TABLE EstadoCuenta;
 --DROP TABLE Operador;

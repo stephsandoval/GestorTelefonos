@@ -11,7 +11,7 @@ DECLARE @outResultCode INT;
 -- INICIALIZAR VARIABLES PARA EL ARCHIVO:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\operaciones.xml', SINGLE_BLOB) AS xmlfile(X);
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\prueba.xml', SINGLE_BLOB) AS xmlfile(X);
 
 -- preparar el archivo xml:
 DECLARE @value INT;
@@ -37,7 +37,9 @@ BEGIN
 
     -- ------------------------------------------------ --
     -- INICIALIZAR VARIABLES:
+
     SELECT TOP 1 @fechaActual = Fecha FROM @FechaOperacion ORDER BY Fecha;
+	SELECT @fechaActual AS Fecha
 
     INSERT INTO @OperacionDiaria (Fecha, Operacion)
     SELECT 
@@ -97,7 +99,9 @@ BEGIN
 
     -- ----------------------------------------
     -- Procesar llamadas
+
     EXEC dbo.ProcesarLlamada @fechaActual, @outResultCode OUTPUT;
+	EXEC dbo.ProcesarLlamadaNoLocal @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
     -- Cargar informacion de uso de datos
