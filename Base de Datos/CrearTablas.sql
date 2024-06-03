@@ -148,6 +148,7 @@ CREATE TABLE LlamadaLocal (
 	IDDetalle INT NOT NULL,
 	IDLlamadaInput INT NOT NULL,
 	CantidadMinutos INT NOT NULL,
+	EsGratis BIT NOT NULL,
 	FOREIGN KEY (IDDetalle) REFERENCES Detalle(ID),
 	FOREIGN KEY (IDLlamadaInput) REFERENCES LlamadaInput(ID)
 );

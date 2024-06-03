@@ -44,16 +44,13 @@ BEGIN
 			  EsGratis
 		)
 		SELECT LI.ID,
-			DATEDIFF(MINUTE, LI.HoraInicio, LI.HoraFin),
-			LI.NumeroA,
-			CASE 
+			  DATEDIFF(MINUTE, LI.HoraInicio, LI.HoraFin)
+			, LI.NumeroA
+			, CASE 
 				WHEN LI.NumeroA LIKE '800%' THEN LI.NumeroA
 				ELSE LI.NumeroDesde
-			  END,
-			CASE	
-				WHEN LI.NumeroA LIKE '800%' THEN 1
-				ELSE 0
 			  END
+			, (SELECT dbo.EsGratis (LI.NumeroDesde, LI.NumeroA))
 		FROM dbo.LlamadaInput LI
 		WHERE (LI.NumeroDesde LIKE '8%' OR LI.NumeroDesde LIKE '9%') 
 			AND (LI.NumeroA != '911' AND LI.NumeroA != '110' AND LI.NumeroA NOT LIKE '900%')
@@ -128,11 +125,11 @@ BEGIN
 		FROM CombinedCalls CC
 		WHERE CC.Total911 > 0 OR CC.Total110 > 0 OR CC.Total900 > 0;
 
-		-- INSERT INTO LlamadaLocal TABLE:
 		INSERT INTO dbo.LlamadaLocal (
-			  IDDetalle,
-			  IDLlamadaInput,
-			  CantidadMinutos
+			    IDDetalle
+			  , IDLlamadaInput
+			  , CantidadMinutos
+			  , EsGratis
 		)
 		SELECT 
 			(SELECT TOP 1 D.ID
@@ -141,8 +138,9 @@ BEGIN
 				INNER JOIN dbo.Detalle D ON F.ID = D.IDFactura
 				WHERE C.NumeroTelefono = LRL.NumeroPaga
 				AND F.FechaFactura > @inFechaOperacion)
-			, LRL.IDLlamadaInput,
-			LRL.CantidadMinutos
+			, LRL.IDLlamadaInput
+			, LRL.CantidadMinutos
+			, LRL.EsGratis
 		FROM @LlamadaRegistradaLocal LRL;
 
 		-- Output result code

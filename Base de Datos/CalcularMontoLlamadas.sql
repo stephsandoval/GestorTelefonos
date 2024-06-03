@@ -28,6 +28,7 @@ BEGIN
 
 	DECLARE @horaFin DATETIME;                                   -- hora en que termina la llamada
 	DECLARE @numeroA VARCHAR(16);
+	DECLARE @llamadaGratis BIT;
 	DECLARE @cantidadLlamadas INT;                               -- cantidad de llamadas locales realizadas
 	DECLARE @llamadaActual INT;                                  -- variable para iterar sobre las llamadas
 	DECLARE @cantidadActualMinutos INT;                          -- cantidad de minutos que se han procesado
@@ -41,6 +42,7 @@ BEGIN
 		, NumeroA VARCHAR(16)
 		, HoraFin DATETIME
 		, CantidadMinutos INT
+		, EsGratis BIT
 	)
 
 	SELECT @numeroTelefono = C.NumeroTelefono
@@ -135,10 +137,12 @@ BEGIN
 			  NumeroA
 			, HoraFin
 			, CantidadMinutos
+			, EsGratis
 		)
 		SELECT LI.NumeroA
 			, LI.HoraFin
 			, LL.CantidadMinutos
+			, LL.EsGratis
 		FROM dbo.LlamadaInput LI
 		INNER JOIN dbo.LlamadaLocal LL ON LL.IDLlamadaInput = LI.ID
 		WHERE LL.IDDetalle = @IDDetalle
@@ -150,11 +154,15 @@ BEGIN
 
 		WHILE @llamadaActual <= @cantidadLlamadas
 		BEGIN
+			SELECT @llamadaGratis = LR.EsGratis
+			FROM @LlamadaRegistrada LR
+			WHERE LR.SEC = @llamadaActual;
+
 			SELECT @cantidadMinutos = LR.CantidadMinutos
 			FROM @LlamadaRegistrada LR
 			WHERE LR.SEC = @llamadaActual
 
-			IF (@cantidadActualMinutos + @cantidadMinutos > @cantidadMinutosBase)
+			IF (@llamadaGratis = 0 AND @cantidadActualMinutos + @cantidadMinutos > @cantidadMinutosBase)
 			BEGIN
 				SELECT @horaFin = LR.HoraFin
 				FROM @LlamadaRegistrada LR
