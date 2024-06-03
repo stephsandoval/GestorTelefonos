@@ -57,6 +57,7 @@ BEGIN
 			SET
 				  TotalMinutosEntrantes = OC.CantidadMinutosEntrantes
 				, TotalMinutosSalientes = OC.CantidadMinutosSalientes
+				, EstaCerrado = 1
 			FROM dbo.EstadoCuenta EC
 			INNER JOIN @OperadorCierre OC ON OC.IDOperador = EC.IDOperador
 			WHERE EC.FechaCierre = @inFechaOperacion
@@ -67,6 +68,7 @@ BEGIN
 				, TotalMinutosSalientes
 				, FechaApertura
 				, FechaCierre
+				, EstaCerrado
 			)
 			OUTPUT INSERTED.ID INTO @NuevoEstadoCuenta (IDEstadoCuenta)
 			SELECT OA.IDOperador
@@ -74,6 +76,7 @@ BEGIN
 				, 0
 				, @inFechaOperacion
 				, DATEADD(MONTH, 1, @inFechaOperacion)
+				, 0
 			FROM @OperadorApertura OA
 
 			INSERT INTO dbo.DetalleEstadoCuenta (

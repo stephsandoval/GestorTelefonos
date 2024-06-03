@@ -207,6 +207,7 @@ CREATE TABLE EstadoCuenta (
 	TotalMinutosSalientes INT NOT NULL,
 	FechaApertura DATE NOT NULL,
 	FechaCierre DATE NOT NULL,
+	EstaCerrado BIT NOT NULL,
 	FOREIGN KEY (IDOperador) REFERENCES Operador(ID)
 );
 
