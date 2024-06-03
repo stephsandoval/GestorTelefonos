@@ -109,9 +109,6 @@ BEGIN
             SET @numeroActual = @numeroActual + 1;
         END
 
-        SELECT * FROM @NumeroTelefonoRegistrado;
-        SELECT * FROM @NumeroTelefonoNoRegistrado;
-
         BEGIN TRANSACTION tProcesarTelefonos
 
             UPDATE TEC

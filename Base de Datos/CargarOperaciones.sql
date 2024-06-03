@@ -11,7 +11,7 @@ DECLARE @outResultCode INT;
 -- INICIALIZAR VARIABLES PARA EL ARCHIVO:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\operaciones.xml', SINGLE_BLOB) AS xmlfile(X);
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\prueba.xml', SINGLE_BLOB) AS xmlfile(X);
 
 -- preparar el archivo xml:
 DECLARE @value INT;
@@ -33,6 +33,13 @@ BEGIN
     DECLARE @OperacionDiaria TABLE (
         Fecha DATE,
         Operacion XML
+    );
+
+	DECLARE @TempRelacionFamiliar TABLE (
+		Fecha DATE,
+        DocIdDe VARCHAR(16),
+        DocIdA VARCHAR(16),
+        TipoRelacion INT
     );
 
     -- ------------------------------------------------ --
@@ -73,17 +80,42 @@ BEGIN
     -- Abrir o cerrar una nueva factura para los contratos
 
     EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
-	EXEC dbo.AbrirCerrarEstadosCuenta @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.AbrirCerrarEstadosCuenta @fechaActual, @outResultCode OUTPUT;
 
-	-- ----------------------------------------
-	-- procesar multas:
+    -- ----------------------------------------
+    -- Procesar multas:
 
-	EXEC dbo.AplicarMultas @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.AplicarMultas @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
     -- Cargar informacion de los pagos de facturas
-    
-	EXEC dbo.ProcesarPagoFactura @xmlData, @fechaActual, @outResultCode OUTPUT;
+
+    EXEC dbo.ProcesarPagoFactura @xmlData, @fechaActual, @outResultCode OUTPUT;
+
+    -- ----------------------------------------
+    -- Ingresar informacion a la tabla Parentesco
+
+    -- Extraer datos desde el XML:
+    INSERT INTO @TempRelacionFamiliar (DocIdDe, DocIdA, TipoRelacion, Fecha)
+    SELECT 
+        RelacionFamiliar.value('@DocIdDe', 'VARCHAR(16)') AS DocIdDe,
+        RelacionFamiliar.value('@DocIdA', 'VARCHAR(16)') AS DocIdA,
+        RelacionFamiliar.value('@TipoRelacion', 'INT') AS TipoRelacion,
+		@fechaActual AS Fecha
+    FROM @OperacionDiaria AS O
+    CROSS APPLY O.Operacion.nodes('/FechaOperacion/RelacionFamiliar') AS Relacion(RelacionFamiliar);
+
+    -- Insertar los datos en la tabla Parentesco:
+    INSERT INTO dbo.Parentesco (IDTipoRelacion, IDCliente, IDPariente)
+    SELECT
+        TRF.TipoRelacion AS IDTipoRelacion,
+        C1.ID AS IDCliente,
+        C2.ID AS IDPariente
+    FROM @TempRelacionFamiliar TRF
+    INNER JOIN dbo.Cliente C1 ON TRF.DocIdDe = C1.Identificacion
+    INNER JOIN dbo.Cliente C2 ON TRF.DocIdA = C2.Identificacion;
+
+	DELETE FROM @TempRelacionFamiliar WHERE Fecha = @fechaActual;
 
     -- ----------------------------------------
     -- Cargar informacion de llamadas
@@ -99,9 +131,9 @@ BEGIN
     -- ----------------------------------------
     -- Procesar llamadas
 
-	EXEC dbo.ProcesarTelefonos @fechaActual, @outResultCode OUTPUT;
-	EXEC dbo.ProcesarLlamadasLocales @fechaActual, @outResultCode OUTPUT;
-	EXEC dbo.ProcesarLlamadasNoLocales @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.ProcesarTelefonos @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.ProcesarLlamadasLocales @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.ProcesarLlamadasNoLocales @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
     -- Cargar informacion de uso de datos
@@ -113,10 +145,10 @@ BEGIN
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
 
-	-- ----------------------------------------
-	-- procesar datos:
+    -- ----------------------------------------
+    -- Procesar datos:
 
-	EXEC dbo.ProcesarUsoDatos @fechaActual, @outResultCode OUTPUT;
+    EXEC dbo.ProcesarUsoDatos @fechaActual, @outResultCode OUTPUT;
 
     DELETE FROM @FechaOperacion WHERE Fecha = @fechaActual;
     DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;
