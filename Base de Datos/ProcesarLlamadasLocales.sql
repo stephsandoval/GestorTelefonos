@@ -47,10 +47,13 @@ BEGIN
 			  DATEDIFF(MINUTE, LI.HoraInicio, LI.HoraFin)
 			, LI.NumeroA
 			, CASE 
-				WHEN LI.NumeroA LIKE '800%' THEN LI.NumeroA
+				WHEN (LI.NumeroA LIKE '800%' AND LEN(LI.NumeroA) = 11) THEN LI.NumeroA
 				ELSE LI.NumeroDesde
 			  END
-			, (SELECT dbo.EsGratis (LI.NumeroDesde, LI.NumeroA))
+			, CASE
+				WHEN (LI.NumeroA LIKE '800%' AND LEN(LI.NumeroA) = 11) THEN 1
+				ELSE (SELECT dbo.EsFamiliar (LI.NumeroDesde, LI.NumeroA))
+				END
 		FROM dbo.LlamadaInput LI
 		WHERE (LI.NumeroDesde LIKE '8%' OR LI.NumeroDesde LIKE '9%') 
 			AND (LI.NumeroA != '911' AND LI.NumeroA != '110' AND LI.NumeroA NOT LIKE '900%')
