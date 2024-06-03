@@ -128,5 +128,5 @@ VALUES
 
 INSERT INTO TipoLlamada (Nombre)
 VALUES
-	('Entrante'),
-	('Saliente');
+	('Entrada'),
+	('Salida');

@@ -100,8 +100,9 @@ BEGIN
     -- ----------------------------------------
     -- Procesar llamadas
 
-    EXEC dbo.ProcesarLlamada @fechaActual, @outResultCode OUTPUT;
 	EXEC dbo.ProcesarTelefonos @fechaActual, @outResultCode OUTPUT;
+	EXEC dbo.ProcesarLlamadasLocales @fechaActual, @outResultCode OUTPUT;
+	EXEC dbo.ProcesarLlamadasNoLocales @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
     -- Cargar informacion de uso de datos

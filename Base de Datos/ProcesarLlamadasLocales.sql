@@ -1,4 +1,4 @@
-ALTER PROCEDURE dbo.ProcesarLlamada
+ALTER PROCEDURE dbo.ProcesarLlamadasLocales
 	@inFechaOperacion DATE,
 	@outResultCode INT OUTPUT
 AS
