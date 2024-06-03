@@ -34,6 +34,7 @@ BEGIN
 	DECLARE @cantidadActualMinutos INT;                          -- cantidad de minutos que se han procesado
 	DECLARE @cantidadMinutos INT;                                -- cantidad de minutos de la llamada actual
 	DECLARE @cantidadMinutosBase INT;                            -- cantidad de minutos de la tarifa
+	DECLARE @flagPrimera BIT = 1;
 
 	DECLARE @montoTotal INT; 
 
@@ -177,21 +178,53 @@ BEGIN
 
 				IF (@numeroA LIKE '7%')
 				BEGIN
-					SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @montoMinuto7;
+					IF (@flagPrimera = 1)
+					BEGIN
+						SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @montoMinuto7;
+						SET @flagPrimera = 0;
+					END
+					ELSE
+					BEGIN
+						SET @montoTotal = @montoTotal + (@cantidadMinutos * @montoMinuto7);
+					END
 				END
 				ELSE IF (@numeroA LIKE '6%')
 				BEGIN
-					SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @montoMinuto6;
+					IF (@flagPrimera = 1)
+					BEGIN
+						SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @montoMinuto6;
+						SET @flagPrimera = 0;
+					END
+					ELSE
+					BEGIN
+						SET @montoTotal = @montoTotal + (@cantidadMinutos * @montoMinuto6);
+					END
 				END
 				ELSE
 				BEGIN
 					IF (DATEPART(HOUR, @horaFin) >= 23 OR DATEPART(HOUR, @horaFin) < 5)
 					BEGIN
-						SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaNocturno;
+						IF (@flagPrimera = 1)
+						BEGIN
+							SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaNocturno;
+							SET @flagPrimera = 0;
+						END
+						ELSE
+						BEGIN
+							SET @montoTotal = @montoTotal + (@cantidadMinutos * @tarifaNocturno);
+						END
 					END
 					ELSE
 					BEGIN
-						SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaDiurno;
+						IF (@flagPrimera = 1)
+						BEGIN
+							SET @montoTotal = @montoTotal + (@cantidadActualMinutos + @cantidadMinutos - @cantidadMinutosBase) * @tarifaDiurno;
+							SET @flagPrimera = 0;
+						END
+						ELSE
+						BEGIN
+							SET @montoTotal = @montoTotal + (@cantidadMinutos * @tarifaDiurno);
+						END
 					END
 				END
 			END
