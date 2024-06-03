@@ -13,42 +13,53 @@ BEGIN
 			RETURN;
 		END
 
-		DECLARE @operadorApertura TABLE (
+		DECLARE @OperadorApertura TABLE (
 			  IDOperador INT
 			, Nombre VARCHAR(16)
 		)
 
-		DECLARE @operadorCierre TABLE (
+		DECLARE @OperadorCierre TABLE (
 			  IDOperador INT
-			, Nombre VARCHAR(16)
+			, CantidadMinutosEntrantes INT
+			, CantidadMinutosSalientes INT
 		)
 
 		DECLARE @NuevoEstadoCuenta TABLE (
 			  IDEstadoCuenta INT
 		)
 
-		INSERT INTO @operadorApertura (IDOperador, Nombre)
+		INSERT INTO @OperadorApertura (IDOperador, Nombre)
 		SELECT O.ID, O.Nombre
 		FROM dbo.Operador O
 
 		IF EXISTS (SELECT 1 FROM dbo.EstadoCuenta)
 		BEGIN
-			INSERT INTO @operadorCierre (IDOperador, Nombre)
-			SELECT O.ID, O.Nombre
+			INSERT INTO @OperadorCierre (
+				  IDOperador
+				, CantidadMinutosEntrantes
+				, CantidadMinutosSalientes
+			)
+			SELECT 
+				  O.ID
+				, ISNULL(SUM(TEC.CantidadMinutosEntrantes), 0)
+				, ISNULL(SUM(TEC.CantidadMinutosSalientes), 0)
 			FROM dbo.Operador O
+			INNER JOIN dbo.EstadoCuenta EC ON EC.IDOperador = O.ID
+			INNER JOIN dbo.DetalleEstadoCuenta DE ON DE.IDEstadoCuenta = EC.ID
+			INNER JOIN dbo.TelefonoEstadoCuenta TEC ON TEC.IDDetalleEstadoCuenta = DE.ID
+			WHERE EC.FechaCierre = @inFechaOperacion
+			GROUP BY O.ID;
 		END
-
-		SELECT * FROM @operadorApertura;
-		SELECT * FROM @operadorCierre;
 
 		BEGIN TRANSACTION tAbrirCerrarEstadoCuenta
 
 			UPDATE EC
 			SET
-				  TotalMinutosEntrantes = -1
-				, TotalMinutosSalientes = -1
+				  TotalMinutosEntrantes = OC.CantidadMinutosEntrantes
+				, TotalMinutosSalientes = OC.CantidadMinutosSalientes
 			FROM dbo.EstadoCuenta EC
-			WHERE EC.FechaCierre = @inFechaOperacion;
+			INNER JOIN @OperadorCierre OC ON OC.IDOperador = EC.IDOperador
+			WHERE EC.FechaCierre = @inFechaOperacion
 
 			INSERT INTO dbo.EstadoCuenta (
 				  IDOperador
@@ -63,14 +74,12 @@ BEGIN
 				, 0
 				, @inFechaOperacion
 				, DATEADD(MONTH, 1, @inFechaOperacion)
-			FROM @operadorApertura OA
+			FROM @OperadorApertura OA
 
 			INSERT INTO dbo.DetalleEstadoCuenta (
 				  IDEstadoCuenta
-				, CantidadMinutos
 			)
 			SELECT NEC.IDEstadoCuenta
-				, 0
 			FROM @NuevoEstadoCuenta NEC;
 
 		COMMIT TRANSACTION tAbrirCerrarEstadoCuenta

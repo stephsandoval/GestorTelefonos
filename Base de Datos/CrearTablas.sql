@@ -215,7 +215,6 @@ CREATE TABLE EstadoCuenta (
 CREATE TABLE DetalleEstadoCuenta (
 	ID INT NOT NULL PRIMARY KEY IDENTITY(1,1),
 	IDEstadoCuenta INT NOT NULL,
-	CantidadMinutos INT NOT NULL,
 	FOREIGN KEY (IDEstadoCuenta) REFERENCES EstadoCuenta(ID)
 );
 

@@ -110,15 +110,8 @@ WITH (
 
 EXEC sp_xml_removedocument @value;
 
--- ************************************************************* --
--- fin del codigo para cargar los datos de configuracion
-
--- codigo para pruebas
---SELECT * FROM dbo.TipoTarifa
---SELECT * FROM dbo.TipoElemento
---SELECT * FROM dbo.TipoRelacionFamiliar
---SELECT * FROM dbo.TipoUnidad
---SELECT * FROM dbo.ElementoDeTipoTarifa
+-- ------------------------------------------------------------- --
+-- CARGA MANUAL DE OTROS DATOS:
 
 INSERT INTO Operador (Nombre, DigitoPrefijoPrincipal, DigitoPrefijoSecundario)
 VALUES
@@ -130,3 +123,6 @@ INSERT INTO TipoLlamada (Nombre)
 VALUES
 	('Entrada'),
 	('Salida');
+
+-- ************************************************************* --
+-- fin del codigo para cargar los datos de configuracion
