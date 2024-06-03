@@ -10,113 +10,128 @@ BEGIN
         DECLARE @IDFactura INT;
 
         DECLARE @minutosBase INT = 0;
-        DECLARE @gigasBase FLOAT = 0;
-        DECLARE @minutosTotales INT;
-        DECLARE @gigasTotales FLOAT;
+		DECLARE @gigasBase FLOAT = 0;
+		DECLARE @minutosTotales INT;
+		DECLARE @gigasTotales FLOAT;
 
-        DECLARE @monto911 MONEY;
-        DECLARE @monto110 MONEY;
-        DECLARE @monto900 MONEY;
+		DECLARE @monto911 MONEY;
+		DECLARE @monto110 MONEY;
+		DECLARE @monto900 MONEY;
+		DECLARE @cantidadMinutos110 INT;
+		DECLARE @cantidadMinutos900 INT;
+		DECLARE @cantidadLlamadas911 INT;
 
-        DECLARE @tarifaBase MONEY = 0;
-        DECLARE @minutosExceso INT = 0;
-        DECLARE @gigasExceso FLOAT = 0;
+		DECLARE @tarifaBase MONEY = 0;
+		DECLARE @minutosExceso INT = 0;
+		DECLARE @gigasExceso FLOAT = 0;
 		DECLARE @minutosFamiliares INT;
 
-        SET @outResultCode = 0;
+		SELECT @IDContrato = C.ID
+		FROM dbo.Contrato C
+		WHERE C.NumeroTelefono = @inNumeroTelefono;
+		PRINT @IDContrato
 
-        -- Get Contract ID
-        SELECT @IDContrato = C.ID
-        FROM dbo.Contrato C
-        WHERE C.NumeroTelefono = @inNumeroTelefono;
+		SELECT @IDFactura = F.ID
+		FROM dbo.Factura F
+		WHERE F.IDContrato = @IDContrato AND F.FechaFactura = @inFechaFactura;
+		PRINT @IDFactura
 
-        -- Get Invoice ID
-        SELECT @IDFactura = F.ID
-        FROM dbo.Factura F
-        WHERE F.IDContrato = @IDContrato AND F.FechaFactura = @inFechaFactura;
+		SELECT @tarifaBase = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 1;
+		PRINT @tarifaBase
 
-        -- Get Tarifa base
-        SELECT @tarifaBase = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-        WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 1;
+		SELECT @minutosBase = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 2;
+		PRINT @minutosBase
 
-        -- Get Minutos base
-        SELECT @minutosBase = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-        WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 2;
+		SELECT @gigasBase = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 5;
+		PRINT @gigasBase
 
-        -- Get Gigas base
-        SELECT @gigasBase = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-        WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 5;
+		SELECT @monto911 = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 11;
+		PRINT @monto911
 
-		-- Get monto for 911
-        SELECT @monto911 = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-        WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 11;
+		SELECT @monto110 = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
+		WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 13;
+		PRINT @monto110
 
-        -- Get monto for 110
-        SELECT @monto110 = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
-        WHERE C.ID = @IDContrato AND ETT.IDTipoElemento = 13;
+		SELECT @cantidadMinutos110 = ISNULL(SUM(CF.TotalMinutos110), 0)
+		FROM dbo.CobroFijo CF
+		INNER JOIN dbo.Detalle D ON CF.IDDetalle = D.ID
+		WHERE D.IDFactura = @IDFactura;
+		PRINT @cantidadMinutos110
 
-        -- Get monto for 900
-        SELECT @monto900 = ETT.Valor
-        FROM dbo.ElementoDeTipoTarifa ETT
-        WHERE ETT.IDTipoElemento = 10 AND ETT.IDTipoTarifa = 8;
+		SELECT @cantidadMinutos900 = ISNULL(SUM(CF.TotalMinutos900), 0)
+		FROM dbo.CobroFijo CF
+		INNER JOIN dbo.Detalle D ON CF.IDDetalle = D.ID
+		WHERE D.IDFactura = @IDFactura;
+		PRINT @cantidadMinutos900
 
-        -- Get total minutes used
-        SELECT @minutosTotales = ISNULL(SUM(LL.CantidadMinutos), 0)
-        FROM dbo.LlamadaLocal LL
-        INNER JOIN dbo.Detalle D ON D.ID = LL.IDDetalle
-        WHERE D.IDFactura = @IDFactura;
+		SELECT @cantidadLlamadas911 = ISNULL(SUM(CF.TotalLlamadas911), 0)
+		FROM dbo.CobroFijo CF
+		INNER JOIN dbo.Detalle D ON CF.IDDetalle = D.ID
+		WHERE D.IDFactura = @IDFactura;
+		PRINT @cantidadLlamadas911
 
-        -- Get total data used
-        SELECT @gigasTotales = ISNULL(SUM(UD.CantidadDatos), 0)
-        FROM dbo.UsoDatos UD
-        INNER JOIN dbo.Detalle D ON D.ID = UD.IDDetalle
-        WHERE D.IDFactura = @IDFactura;
+		SELECT @monto900 = ETT.Valor
+		FROM dbo.ElementoDeTipoTarifa ETT
+		WHERE ETT.IDTipoElemento = 10 AND ETT.IDTipoTarifa = 8;
+		PRINT @monto900
+
+		SELECT @minutosTotales = ISNULL(SUM(LL.CantidadMinutos), 0)
+		FROM dbo.LlamadaLocal LL
+		INNER JOIN dbo.Detalle D ON D.ID = LL.IDDetalle
+		WHERE D.IDFactura = @IDFactura;
+		PRINT @minutosTotales
+
+		SELECT @gigasTotales = ISNULL(SUM(UD.CantidadDatos), 0)
+		FROM dbo.UsoDatos UD
+		INNER JOIN dbo.Detalle D ON D.ID = UD.IDDetalle
+		WHERE D.IDFactura = @IDFactura;
+		PRINT @gigasTotales
 
 		SELECT @minutosFamiliares = ISNULL(SUM(LL.CantidadMinutos), 0)
 		FROM dbo.LlamadaLocal LL
 		INNER JOIN dbo.Detalle D ON D.ID = LL.IDDetalle
 		INNER JOIN dbo.LlamadaInput LI ON LI.ID = LL.IDLlamadaInput
 		WHERE D.IDFactura = @IDFactura
-			AND LL.EsGratis = 1
-			AND (EXISTS (SELECT 1 FROM dbo.Parentesco P WHERE P.IDCliente = @IDClienteNumeroDesde AND P.IDPariente = @IDClienteNumeroA)
-				OR EXISTS (SELECT 1 FROM dbo.Parentesco P WHERE P.IDPariente = @IDClienteNumeroDesde AND P.IDCliente = @IDClienteNumeroA))
+			AND (dbo.EsFamiliar (LI.NumeroDesde, LI.NumeroA) = 1)
+		PRINT @minutosFamiliares
 
-        -- Calculate excess minutes and data
-        IF (@minutosTotales > @minutosBase)
-        BEGIN
-            SET @minutosExceso = @minutosTotales - @minutosBase;
-        END
+		IF (@minutosTotales > @minutosBase)
+		BEGIN
+			SET @minutosExceso = @minutosTotales - @minutosBase;
+		END
+		PRINT @minutosExceso
 
-        IF (@gigasTotales > @gigasBase)
-        BEGIN
-            SET @gigasExceso = @gigasTotales - @gigasBase;
-        END
+		IF (@gigasTotales > @gigasBase)
+		BEGIN
+			SET @gigasExceso = @gigasTotales - @gigasBase;
+		END
+		PRINT @gigasExceso
 
-        -- Return result code and billing details
-        SELECT @outResultCode AS outResultCode;
+		SELECT @outResultCode AS outResultCode;
 
-        SELECT @tarifaBase AS 'Tarifa base'
-             , @minutosBase AS 'Minutos de tarifa base'
-             , @minutosExceso AS 'Minutos en exceso a tarifa base'
-             , @gigasBase AS 'Gigas de tarifa base'
-             , @gigasExceso AS 'Gigas en exceso a tarifa base'
-             , @minutosFamiliares AS 'Minutos a familiares'
-             , (CF.TotalLlamadas911 * @monto911) AS 'Cobro por 911'
-             , (CF.TotalMinutos110 * @monto110) AS 'Cobro por 110'
-             , (CF.TotalMinutos900 * @monto900) AS 'Cobro por 900'
-        FROM dbo.CobroFijo CF
-        INNER JOIN dbo.Detalle D ON D.ID = CF.IDDetalle
-        WHERE D.IDFactura = @IDFactura;
+		SELECT @tarifaBase AS 'Tarifa base'
+				, @minutosBase AS 'Minutos de tarifa base'
+				, @minutosExceso AS 'Minutos en exceso a tarifa base'
+				, @gigasBase AS 'Gigas de tarifa base'
+				, @gigasExceso AS 'Gigas en exceso a tarifa base'
+				, @minutosFamiliares AS 'Minutos a familiares'
+				, (@cantidadLlamadas911 * @monto911) AS 'Cobro por 911'
+				, (@cantidadMinutos110 * @monto110) AS 'Cobro por 110'
+				, (@cantidadMinutos900 * @monto900) AS 'Cobro por 900'
 
     END TRY
     BEGIN CATCH
