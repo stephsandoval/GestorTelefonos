@@ -11,7 +11,7 @@ DECLARE @outResultCode INT;
 -- INICIALIZAR VARIABLES PARA EL ARCHIVO:
 
 SELECT @xmlData = X
-FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\operaciones.xml', SINGLE_BLOB) AS xmlfile(X);
+FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\prueba.xml', SINGLE_BLOB) AS xmlfile(X);
 
 -- preparar el archivo xml:
 DECLARE @value INT;
