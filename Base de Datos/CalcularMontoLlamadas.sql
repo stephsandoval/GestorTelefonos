@@ -94,7 +94,10 @@ BEGIN
 	BEGIN
 		SELECT @cantidadMinutos800 = ISNULL(SUM(LL.CantidadMinutos), 0)
 		FROM dbo.LlamadaLocal LL
-		WHERE LL.IDDetalle = @IDDetalle
+		INNER JOIN dbo.LlamadaInput LI ON LI.ID = LL.IDLlamadaInput
+		WHERE LL.IDDetalle = @IDDetalle 
+			AND ((LI.NumeroA = @numeroTelefono)
+			OR (LI.NumeroDesde = @numeroTelefono AND LI.NumeroA NOT LIKE '800%'))
 
 		SET @montoTotal = @montoTotal + (@monto800 * @cantidadMinutos800)
 	END
