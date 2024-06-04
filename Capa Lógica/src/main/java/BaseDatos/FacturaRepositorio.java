@@ -3,7 +3,7 @@ package BaseDatos;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Types;
-import java.util.Date;
+import java.sql.Date;
 
 public class FacturaRepositorio extends Repositorio {
     
@@ -46,7 +46,6 @@ public class FacturaRepositorio extends Repositorio {
 
             callableStatement.getMoreResults();
             resultSet = callableStatement.getResultSet();
-            System.out.println(resultSet.getFetchSize());
             while (resultSet.next()) {
                 float montoAntesIVA = resultSet.getFloat(1);
                 float montoDespuesIVA = resultSet.getFloat(2);
@@ -56,6 +55,45 @@ public class FacturaRepositorio extends Repositorio {
                 Date fechaPago = resultSet.getDate(6);
                 String estado = resultSet.getString(7);
                 resultado.addDatasetItem(new Factura(montoAntesIVA, montoDespuesIVA, multa, total, fechaFactura, fechaPago, estado));
+            }
+        } catch (Exception e){} finally {
+            closeResources();                  
+        }
+        return resultado; 
+    }
+
+    public Resultado consultarDetalleFactura (String numeroTelefono, Date fechaCierreFactura) {
+        ResultSet resultSet;
+        Resultado resultado = new Resultado();
+
+        try {
+            conexion = DriverManager.getConnection(conexionURL);
+            String storedProcedureQuery = "{CALL dbo.ConsultarDetalleFactura(?, ?, ?)}";
+            callableStatement = conexion.prepareCall(storedProcedureQuery);
+
+            callableStatement.setString(1, numeroTelefono);
+            callableStatement.setDate(2, fechaCierreFactura);
+
+            callableStatement.registerOutParameter(3, Types.INTEGER);
+            callableStatement.execute();
+
+            resultSet = callableStatement.getResultSet();
+            resultSet.next();
+            resultado.addCodigoResultado(resultSet.getInt(1));
+
+            callableStatement.getMoreResults();
+            resultSet = callableStatement.getResultSet();
+            while (resultSet.next()) {
+                float tarifaBase = resultSet.getFloat(1);
+                int minutosBase = resultSet.getInt(2);
+                int minutosExceso = resultSet.getInt(3);
+                float gigasBase = resultSet.getFloat(4);
+                float gigasExceso = resultSet.getFloat(5);
+                int minutosFamiliares = resultSet.getInt(6);
+                float cobro911 = resultSet.getFloat(7);
+                float cobro110 = resultSet.getFloat(8);
+                float cobro900 = resultSet.getFloat(9);
+                resultado.addDatasetItem(new DetalleFactura(tarifaBase, gigasBase, gigasExceso, cobro911, cobro110, cobro900, minutosBase, minutosExceso, minutosFamiliares));
             }
         } catch (Exception e){} finally {
             closeResources();                  

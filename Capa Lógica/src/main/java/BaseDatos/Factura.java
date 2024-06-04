@@ -74,6 +74,7 @@ public class Factura {
         return estado;
     }
 
+    @Override
     public String toString() {
         return String.format("|%17s|%19s|%7s|%9s|%15s|%12s|%10s|",
             montoAntesIVA, montoDespuesIVA, multa, total, fechaFactura, fechaPago, estado);
