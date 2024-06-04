@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.Types;
 
 import Elementos.Llamada;
+import Elementos.UsoDatos;
 import Facturas.DetalleFactura;
 import Facturas.Factura;
 
@@ -137,7 +138,41 @@ public class FacturaRepositorio extends Repositorio {
                 String numeroDestino = resultSet.getString(4);
                 int duracion = resultSet.getInt(5);
                 String condicion = resultSet.getString(6);
-                resultado.addDatasetItem(new Llamada(fecha, horaInicio, horaFin, numeroDestino, condicion, duracion));
+                resultado.addDatasetItem(new Llamada(fecha, horaInicio, horaFin, numeroDestino
+                    , condicion, duracion));
+            }
+        } catch (Exception e){} finally {
+            closeResources();                  
+        }
+        return resultado; 
+    }
+
+    public Resultado consultarUsoDatosFactura (String numeroTelefono, Date fechaCierreFactura) {
+        ResultSet resultSet;
+        Resultado resultado = new Resultado();
+
+        try {
+            conexion = DriverManager.getConnection(conexionURL);
+            String storedProcedureQuery = "{CALL dbo.ConsultarUsoDatosFactura(?, ?, ?)}";
+            callableStatement = conexion.prepareCall(storedProcedureQuery);
+
+            callableStatement.setString(1, numeroTelefono);
+            callableStatement.setDate(2, fechaCierreFactura);
+
+            callableStatement.registerOutParameter(3, Types.INTEGER);
+            callableStatement.execute();
+
+            resultSet = callableStatement.getResultSet();
+            resultSet.next();
+            resultado.addCodigoResultado(resultSet.getInt(1));
+
+            callableStatement.getMoreResults();
+            resultSet = callableStatement.getResultSet();
+            while (resultSet.next()) {
+                Date fecha = resultSet.getDate(1);
+                float gigasConsumidos = resultSet.getFloat(2);
+                float monto = resultSet.getFloat(3);
+                resultado.addDatasetItem(new UsoDatos(fecha, gigasConsumidos, monto));
             }
         } catch (Exception e){} finally {
             closeResources();                  

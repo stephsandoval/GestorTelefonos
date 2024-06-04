@@ -87,7 +87,7 @@ BEGIN
 
 		SELECT UDR.Fecha AS 'Fecha'
 			, UDR.CantidadDatos AS 'Gigas consumidos'
-			, UDR.Monto AS 'Monto por gigas consumidos'
+			, UDR.Monto AS 'Monto por consumo'
 		FROM @UsoDatosRegistrado UDR
 
     END TRY

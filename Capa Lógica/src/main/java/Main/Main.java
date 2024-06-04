@@ -5,6 +5,7 @@ import java.sql.Date;
 import BaseDatos.FacturaRepositorio;
 import BaseDatos.Resultado;
 import Elementos.Llamada;
+import Elementos.UsoDatos;
 import Facturas.DetalleFactura;
 import Facturas.Factura;
 
@@ -53,6 +54,19 @@ public class Main {
                 System.out.println("\n|   Fecha   | Hora de inicio | Hora de fin | Numero destino | Duracion | Condicion cobro |");;
                 for (Object llamada : resultado.getDataset()){
                     System.out.println(((Llamada)(llamada)).toString());
+                }
+            }
+        }
+
+        resultado = facturaRepositorio.consultarUsoDatosFactura(numeroTelefono, fecha);
+        codigoResultado = resultado.getCodigoResultado();
+        if (codigoResultado == 0) {
+            if (resultado.getDataset().size() == 0) {
+                System.out.println("No se encontraron facturas para el cliente.");
+            } else {
+                System.out.println("\n|   Fecha   | Gigas consumidos | Monto por consumo |");;
+                for (Object usoDatos : resultado.getDataset()){
+                    System.out.println(((UsoDatos)(usoDatos)).toString());
                 }
             }
         }
