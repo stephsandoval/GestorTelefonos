@@ -16,8 +16,8 @@ BEGIN
 
 		SELECT @outResultCode AS outResultCode;
 
-		SELECT EC.TotalMinutosEntrantes AS 'Total de minutos de llamadas entrantes'
-			, EC.TotalMinutosSalientes AS 'Total de minutos de llamadas salientes'
+		SELECT EC.TotalMinutosEntrantes AS 'Total de minutos entrantes'
+			, EC.TotalMinutosSalientes AS 'Total de minutos salientes'
 			, EC.FechaApertura AS 'Fecha apertura'
 			, EC.FechaCierre AS 'Fecha de cierre'
 			, CASE

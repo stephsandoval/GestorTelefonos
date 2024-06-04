@@ -12,23 +12,23 @@ import Facturas.Factura;
 import java.sql.Date;
 import java.sql.Time;
 
-public class FacturaRepositorio extends Repositorio {
+public class RepositorioFactura extends Repositorio {
     
-    private static FacturaRepositorio instance;
+    private static RepositorioFactura instance;
         
     /* ------------------------------------------------------------ */
     // CONSTRUCTOR DE LA CLASE
 
-    private FacturaRepositorio() {
+    private RepositorioFactura() {
         super();
     }
 
     /* ------------------------------------------------------------ */
     // INSTANCIA DE LA CLASE
 
-    public static synchronized FacturaRepositorio getInstance() {
+    public static synchronized RepositorioFactura getInstance() {
         if (instance == null){
-            instance = new FacturaRepositorio();
+            instance = new RepositorioFactura();
         }
         return instance;
     }

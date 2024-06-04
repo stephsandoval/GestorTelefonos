@@ -2,24 +2,29 @@ package Main;
 
 import java.sql.Date;
 
-import BaseDatos.FacturaRepositorio;
+import BaseDatos.RepositorioEstadoCuenta;
+import BaseDatos.RepositorioFactura;
 import BaseDatos.Resultado;
 import Elementos.Llamada;
 import Elementos.UsoDatos;
+import EstadosCuenta.EstadoCuenta;
 import Facturas.DetalleFactura;
 import Facturas.Factura;
 
 public class Main {
     
     public static void main (String[] args) {
-        FacturaRepositorio facturaRepositorio = FacturaRepositorio.getInstance();
+        RepositorioFactura repositorioFactura = RepositorioFactura.getInstance();
+        RepositorioEstadoCuenta repositorioEstadoCuenta = RepositorioEstadoCuenta.getInstance();
         Resultado resultado;
         int codigoResultado;
 
         String numeroTelefono = "89738908";
         Date fecha = Date.valueOf("2024-02-01");
+        char empresa = 'Z';
 
-        resultado = facturaRepositorio.consultarFacturas(numeroTelefono);
+        System.out.println("*** FACTURAS ***");
+        resultado = repositorioFactura.consultarFacturas(numeroTelefono);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -32,7 +37,7 @@ public class Main {
             }
         }
 
-        resultado = facturaRepositorio.consultarDetalleFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarDetalleFactura(numeroTelefono, fecha);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -45,7 +50,7 @@ public class Main {
             }
         }
 
-        resultado = facturaRepositorio.consultarLlamadasFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarLlamadasFactura(numeroTelefono, fecha);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -58,7 +63,7 @@ public class Main {
             }
         }
 
-        resultado = facturaRepositorio.consultarUsoDatosFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarUsoDatosFactura(numeroTelefono, fecha);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -70,6 +75,19 @@ public class Main {
                 }
             }
         }
-    }
 
+        System.out.println("*** ESTADOS DE CUENTA ***");
+        resultado = repositorioEstadoCuenta.consultarEstadoCuenta(empresa);
+        codigoResultado = resultado.getCodigoResultado();
+        if (codigoResultado == 0) {
+            if (resultado.getDataset().size() == 0) {
+                System.out.println("No se encontraron estados de cuenta para la empresa.");
+            } else {
+                System.out.println("\n\n| Minutos entrantes | Minutos salientes | Fecha apertura | Fecha cierre |   Estado   |");;
+                for (Object estadoCuenta : resultado.getDataset()){
+                    System.out.println(((EstadoCuenta)(estadoCuenta)).toString());
+                }
+            }
+        }
+    }
 }
