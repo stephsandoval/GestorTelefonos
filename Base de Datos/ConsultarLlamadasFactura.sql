@@ -71,8 +71,8 @@ BEGIN
 		SELECT LR.Fecha AS 'Fecha'
 			, CONVERT(TIME(3), LR.HoraInicio) AS 'Hora de inicio'
 			, CONVERT(TIME(3), LR.HoraFin) AS 'Hora de fin'
-			, LR.NumeroA AS 'Numero destino'
 			, LR.CantidadMinutos AS 'Duracion'
+			, LR.NumeroA AS 'Numero destino'
 			, CASE
 				WHEN LR.EsGratis = 1 THEN 'Gratis'
 				ELSE 'A cobro'

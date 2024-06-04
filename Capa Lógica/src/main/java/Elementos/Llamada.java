@@ -85,9 +85,13 @@ public class Llamada {
         return duracion;
     }
 
-    @Override
-    public String toString() {
-        return String.format("|%11s|%16s|%13s|%16s|%10s|%17s|",
-            fecha, horaInicio, horaFin, numeroDestino, duracion, condicion);
+    public String toStringShort() {
+        return String.format("|%11s|%16s|%13s|%10s|%16s|%17s|",
+            fecha, horaInicio, horaFin, duracion, numeroDestino, condicion);
+    }
+
+    public String toStringLong() {
+        return String.format("|%11s|%16s|%13s|%10s|%15s|%16s|%17s|",
+            fecha, horaInicio, horaFin, duracion, numeroOrigen, numeroDestino, condicion);
     }
 }

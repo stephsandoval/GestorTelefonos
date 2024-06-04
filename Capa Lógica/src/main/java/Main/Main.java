@@ -20,8 +20,9 @@ public class Main {
         int codigoResultado;
 
         String numeroTelefono = "89738908";
-        Date fecha = Date.valueOf("2024-02-01");
-        char empresa = 'Z';
+        Date fechaFactura = Date.valueOf("2024-02-01");
+        Date fechaEmpresa = Date.valueOf("2024-02-05");
+        char empresa = 'X';
 
         System.out.println("*** FACTURAS ***");
         resultado = repositorioFactura.consultarFacturas(numeroTelefono);
@@ -37,7 +38,7 @@ public class Main {
             }
         }
 
-        resultado = repositorioFactura.consultarDetalleFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarDetalleFactura(numeroTelefono, fechaFactura);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -50,20 +51,20 @@ public class Main {
             }
         }
 
-        resultado = repositorioFactura.consultarLlamadasFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarLlamadasFactura(numeroTelefono, fechaFactura);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
                 System.out.println("No se encontraron facturas para el cliente.");
             } else {
-                System.out.println("\n|   Fecha   | Hora de inicio | Hora de fin | Numero destino | Duracion | Condicion cobro |");;
+                System.out.println("\n|   Fecha   | Hora de inicio | Hora de fin | Duracion | Numero destino | Condicion cobro |");;
                 for (Object llamada : resultado.getDataset()){
-                    System.out.println(((Llamada)(llamada)).toString());
+                    System.out.println(((Llamada)(llamada)).toStringShort());
                 }
             }
         }
 
-        resultado = repositorioFactura.consultarUsoDatosFactura(numeroTelefono, fecha);
+        resultado = repositorioFactura.consultarUsoDatosFactura(numeroTelefono, fechaFactura);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
@@ -76,16 +77,29 @@ public class Main {
             }
         }
 
-        System.out.println("*** ESTADOS DE CUENTA ***");
+        System.out.println("\n\n*** ESTADOS DE CUENTA ***");
         resultado = repositorioEstadoCuenta.consultarEstadoCuenta(empresa);
         codigoResultado = resultado.getCodigoResultado();
         if (codigoResultado == 0) {
             if (resultado.getDataset().size() == 0) {
                 System.out.println("No se encontraron estados de cuenta para la empresa.");
             } else {
-                System.out.println("\n\n| Minutos entrantes | Minutos salientes | Fecha apertura | Fecha cierre |   Estado   |");;
+                System.out.println("| Minutos entrantes | Minutos salientes | Fecha apertura | Fecha cierre |   Estado   |");;
                 for (Object estadoCuenta : resultado.getDataset()){
                     System.out.println(((EstadoCuenta)(estadoCuenta)).toString());
+                }
+            }
+        }
+
+        resultado = repositorioEstadoCuenta.consultarLlamadasEstadoCuenta(empresa, fechaEmpresa);
+        codigoResultado = resultado.getCodigoResultado();
+        if (codigoResultado == 0) {
+            if (resultado.getDataset().size() == 0) {
+                System.out.println("No se encontraron estados de cuenta para la empresa.");
+            } else {
+                System.out.println("\n|   Fecha   | Hora de inicio | Hora de fin | Duracion | Numero origen | Numero destino | Tipo de llamada |");;
+                for (Object llamada : resultado.getDataset()){
+                    System.out.println(((Llamada)(llamada)).toStringLong());
                 }
             }
         }

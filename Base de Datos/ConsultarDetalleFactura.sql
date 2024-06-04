@@ -127,10 +127,10 @@ BEGIN
 
 		SELECT @tarifaBase AS 'Tarifa base'
 				, @minutosBase AS 'Minutos de tarifa base'
-				, @minutosExceso AS 'Minutos en exceso a tarifa base'
-				, @gigasBase AS 'Gigas de tarifa base'
-				, @gigasExceso AS 'Gigas en exceso a tarifa base'
+				, @minutosExceso AS 'Minutos en exceso'
 				, @minutosFamiliares AS 'Minutos a familiares'
+				, @gigasBase AS 'Gigas de tarifa base'
+				, @gigasExceso AS 'Gigas en exceso'
 				, (@cantidadLlamadas911 * @monto911) AS 'Cobro por 911'
 				, (@cantidadMinutos110 * @monto110) AS 'Cobro por 110'
 				, (@cantidadMinutos900 * @monto900) AS 'Cobro por 900'

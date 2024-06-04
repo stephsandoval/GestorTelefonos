@@ -95,9 +95,9 @@ public class RepositorioFactura extends Repositorio {
                 float tarifaBase = resultSet.getFloat(1);
                 int minutosBase = resultSet.getInt(2);
                 int minutosExceso = resultSet.getInt(3);
-                float gigasBase = resultSet.getFloat(4);
-                float gigasExceso = resultSet.getFloat(5);
-                int minutosFamiliares = resultSet.getInt(6);
+                int minutosFamiliares = resultSet.getInt(4);
+                float gigasBase = resultSet.getFloat(5);
+                float gigasExceso = resultSet.getFloat(6);
                 float cobro911 = resultSet.getFloat(7);
                 float cobro110 = resultSet.getFloat(8);
                 float cobro900 = resultSet.getFloat(9);
@@ -135,8 +135,8 @@ public class RepositorioFactura extends Repositorio {
                 Date fecha = resultSet.getDate(1);
                 Time horaInicio = resultSet.getTime(2);
                 Time horaFin = resultSet.getTime(3);
-                String numeroDestino = resultSet.getString(4);
-                int duracion = resultSet.getInt(5);
+                int duracion = resultSet.getInt(4);
+                String numeroDestino = resultSet.getString(5);
                 String condicion = resultSet.getString(6);
                 resultado.addDatasetItem(new Llamada(fecha, horaInicio, horaFin, numeroDestino
                     , condicion, duracion));
