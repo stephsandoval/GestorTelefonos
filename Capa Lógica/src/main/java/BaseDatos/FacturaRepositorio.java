@@ -3,7 +3,13 @@ package BaseDatos;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Types;
+
+import Elementos.Llamada;
+import Facturas.DetalleFactura;
+import Facturas.Factura;
+
 import java.sql.Date;
+import java.sql.Time;
 
 public class FacturaRepositorio extends Repositorio {
     
@@ -54,7 +60,8 @@ public class FacturaRepositorio extends Repositorio {
                 Date fechaFactura = resultSet.getDate(5);
                 Date fechaPago = resultSet.getDate(6);
                 String estado = resultSet.getString(7);
-                resultado.addDatasetItem(new Factura(montoAntesIVA, montoDespuesIVA, multa, total, fechaFactura, fechaPago, estado));
+                resultado.addDatasetItem(new Factura(montoAntesIVA, montoDespuesIVA, multa, total, 
+                    fechaFactura, fechaPago, estado));
             }
         } catch (Exception e){} finally {
             closeResources();                  
@@ -93,7 +100,44 @@ public class FacturaRepositorio extends Repositorio {
                 float cobro911 = resultSet.getFloat(7);
                 float cobro110 = resultSet.getFloat(8);
                 float cobro900 = resultSet.getFloat(9);
-                resultado.addDatasetItem(new DetalleFactura(tarifaBase, gigasBase, gigasExceso, cobro911, cobro110, cobro900, minutosBase, minutosExceso, minutosFamiliares));
+                resultado.addDatasetItem(new DetalleFactura(tarifaBase, gigasBase, gigasExceso, cobro911
+                    , cobro110, cobro900, minutosBase, minutosExceso, minutosFamiliares));
+            }
+        } catch (Exception e){} finally {
+            closeResources();                  
+        }
+        return resultado; 
+    }
+
+    public Resultado consultarLlamadasFactura (String numeroTelefono, Date fechaCierreFactura) {
+        ResultSet resultSet;
+        Resultado resultado = new Resultado();
+
+        try {
+            conexion = DriverManager.getConnection(conexionURL);
+            String storedProcedureQuery = "{CALL dbo.ConsultarLlamadasFactura(?, ?, ?)}";
+            callableStatement = conexion.prepareCall(storedProcedureQuery);
+
+            callableStatement.setString(1, numeroTelefono);
+            callableStatement.setDate(2, fechaCierreFactura);
+
+            callableStatement.registerOutParameter(3, Types.INTEGER);
+            callableStatement.execute();
+
+            resultSet = callableStatement.getResultSet();
+            resultSet.next();
+            resultado.addCodigoResultado(resultSet.getInt(1));
+
+            callableStatement.getMoreResults();
+            resultSet = callableStatement.getResultSet();
+            while (resultSet.next()) {
+                Date fecha = resultSet.getDate(1);
+                Time horaInicio = resultSet.getTime(2);
+                Time horaFin = resultSet.getTime(3);
+                String numeroDestino = resultSet.getString(4);
+                int duracion = resultSet.getInt(5);
+                String condicion = resultSet.getString(6);
+                resultado.addDatasetItem(new Llamada(fecha, horaInicio, horaFin, numeroDestino, condicion, duracion));
             }
         } catch (Exception e){} finally {
             closeResources();                  

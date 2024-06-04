@@ -1,4 +1,4 @@
-package BaseDatos;
+package Facturas;
 
 import java.util.Date;
 

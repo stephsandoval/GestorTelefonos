@@ -25,8 +25,8 @@ BEGIN
 		SELECT @outResultCode AS outResultCode;
 
 		SELECT CONVERT(DATE, LI.HoraInicio) AS 'Fecha'
-			, LI.NumeroDesde AS 'Numero emisor'
-			, LI.NumeroA AS 'Numero receptor'
+			, LI.NumeroDesde AS 'Numero origen'
+			, LI.NumeroA AS 'Numero destino'
 			, CONVERT(TIME(3), LI.HoraInicio) AS 'Hora de inicio'
 			, CONVERT(TIME(3), LI.HoraFin) AS 'Hora de fin'
 			, LNL.CantidadMinutos AS 'Duracion'

@@ -2,10 +2,11 @@ package Main;
 
 import java.sql.Date;
 
-import BaseDatos.DetalleFactura;
-import BaseDatos.Factura;
 import BaseDatos.FacturaRepositorio;
 import BaseDatos.Resultado;
+import Elementos.Llamada;
+import Facturas.DetalleFactura;
+import Facturas.Factura;
 
 public class Main {
     
@@ -39,6 +40,19 @@ public class Main {
                 System.out.println("\n| Tarifa Base | Minutos Base | Minutos Exceso | Minutos Familiares | Gigas Base | Gigas Exceso | Cobro 911 | Cobro 110 | Cobro 900 |");;
                 for (Object detalle : resultado.getDataset()){
                     System.out.println(((DetalleFactura)(detalle)).toString());
+                }
+            }
+        }
+
+        resultado = facturaRepositorio.consultarLlamadasFactura(numeroTelefono, fecha);
+        codigoResultado = resultado.getCodigoResultado();
+        if (codigoResultado == 0) {
+            if (resultado.getDataset().size() == 0) {
+                System.out.println("No se encontraron facturas para el cliente.");
+            } else {
+                System.out.println("\n|   Fecha   | Hora de inicio | Hora de fin | Numero destino | Duracion | Condicion cobro |");;
+                for (Object llamada : resultado.getDataset()){
+                    System.out.println(((Llamada)(llamada)).toString());
                 }
             }
         }

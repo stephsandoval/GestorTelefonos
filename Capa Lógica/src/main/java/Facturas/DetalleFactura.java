@@ -1,4 +1,4 @@
-package BaseDatos;
+package Facturas;
 
 public class DetalleFactura {
     
