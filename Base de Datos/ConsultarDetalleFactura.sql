@@ -26,6 +26,8 @@ BEGIN
 		DECLARE @gigasExceso FLOAT = 0;
 		DECLARE @minutosFamiliares INT;
 
+		SET @outResultCode = 0;
+
 		SELECT @IDContrato = C.ID
 		FROM dbo.Contrato C
 		WHERE C.NumeroTelefono = @inNumeroTelefono;

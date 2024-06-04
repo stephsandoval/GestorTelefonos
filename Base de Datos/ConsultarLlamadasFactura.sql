@@ -66,6 +66,8 @@ BEGIN
 			AND (DATEDIFF(MONTH, CONVERT(DATE, LI.HoraInicio), @inFechaFactura) < 2
 				AND LI.HoraInicio < @inFechaFactura)
 
+		SELECT @outResultCode AS outResultCode
+
 		SELECT LR.Fecha AS 'Fecha'
 			, CONVERT(TIME(3), LR.HoraInicio) AS 'Hora de inicio'
 			, CONVERT(TIME(3), LR.HoraFin) AS 'Hora de fin'

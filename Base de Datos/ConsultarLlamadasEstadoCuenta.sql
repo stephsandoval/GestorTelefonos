@@ -22,6 +22,8 @@ BEGIN
 		WHERE EC.FechaCierre = @inFechaCierreEstadoCuenta
 			AND EC.IDOperador = @IDOperador;
 
+		SELECT @outResultCode AS outResultCode;
+
 		SELECT CONVERT(DATE, LI.HoraInicio) AS 'Fecha'
 			, LI.NumeroDesde AS 'Numero emisor'
 			, LI.NumeroA AS 'Numero receptor'
@@ -39,8 +41,6 @@ BEGIN
 		WHERE DE.ID = @IDDetalle
 			AND (DATEDIFF(MONTH, CONVERT(DATE, LI.HoraInicio), @inFechaCierreEstadoCuenta) < 2
 				AND LI.HoraInicio < @inFechaCierreEstadoCuenta);
-
-		SELECT @outResultCode AS outResultCode;
 
 	END TRY
 

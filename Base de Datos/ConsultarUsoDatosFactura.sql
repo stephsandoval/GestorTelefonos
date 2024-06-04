@@ -83,10 +83,13 @@ BEGIN
 
 		END
 
+		SELECT @outResultCode AS outResultCode
+
 		SELECT UDR.Fecha AS 'Fecha'
 			, UDR.CantidadDatos AS 'Gigas consumidos'
 			, UDR.Monto AS 'Monto por gigas consumidos'
 		FROM @UsoDatosRegistrado UDR
+
     END TRY
     BEGIN CATCH
         INSERT INTO DBError (
