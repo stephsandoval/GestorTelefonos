@@ -43,7 +43,9 @@
                     }
                 }
             }>
-            <button on:click={consultarTelefono}>Procesar consulta</button>
+            <a href="/listaFacturasTelefono?telefono={inputTelefono}">
+                <button on:click={consultarTelefono}>Procesar consulta</button>
+            </a>
         </div>
         <button on:click={showInputEmpresa}>Consultar estado de cuenta de empresa</button>
         <div style="display: {boolInputEmpresa ? "block" : "none"};">
@@ -51,7 +53,9 @@
             name="inputEmpresa" id="inputEmpresa" 
             placeholder="Nombre de empresa"
             bind:value={inputEmpresa}>
-            <button on:click={consultarEmpresa}>Procesar consulta</button>
+            <a href="/listaFacturasEmpresa?empresa={encodeURIComponent(inputEmpresa)}">
+                <button on:click={consultarEmpresa}>Procesar consulta</button>
+            </a>
         </div>
     </div>
 </div>
