@@ -31,7 +31,6 @@
     <p>Cobro por llamadas al 911: {data.cobro911}</p>
     <p>Cobro por llamadas al 110: {data.cobro110}</p>
     <p>Cobro por llamadas a números 900: {data.cobro900}</p>
-    <p>Cobro por llamadas a números 800:</p>
     <a href={`/listaLlamadasTelefono?telefono=${telefono}&fecha=${fecha}`}>
         <button>Detalle de todas las llamadas</button>
     </a>
