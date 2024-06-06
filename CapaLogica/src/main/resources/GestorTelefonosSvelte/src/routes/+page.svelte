@@ -53,7 +53,7 @@
             name="inputEmpresa" id="inputEmpresa" 
             placeholder="Nombre de empresa"
             bind:value={inputEmpresa}>
-            <a href="/listaFacturasEmpresa?empresa={encodeURIComponent(inputEmpresa)}">
+            <a href="/estadoCuenta?empresa={encodeURIComponent(inputEmpresa)}">
                 <button on:click={consultarEmpresa}>Procesar consulta</button>
             </a>
         </div>
