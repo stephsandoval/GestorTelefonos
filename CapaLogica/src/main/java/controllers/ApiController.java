@@ -68,7 +68,8 @@ public class ApiController {
 	@PostMapping("/getListaLlamadasEmpresa")
 	public ArrayList<Object> getListaLlamadasEmpresa(@RequestBody String data) {
 		String empresa = new JSONObject(data).getString("empresa");
-		resultado = repositorioEstadoCuenta.consultarLlamadasEstadoCuenta(empresa.charAt(0));
+		String fechaCierre = new JSONObject(data).getString("fechaCierre");
+		resultado = repositorioEstadoCuenta.consultarLlamadasEstadoCuenta(empresa.charAt(0), Date.valueOf(fechaCierre));
 		codigoResultado = resultado.getCodigoResultado();
 		return resultado.getDataset();
 	}

@@ -2,12 +2,13 @@
     import { page } from '$app/stores';
 
     let empresa = $page.url.searchParams.get('empresa');
+    let fechaCierre = $page.url.searchParams.get('fechaCierre');
     let llamadas = [];
 
     let loadData = async () => {
-        await fetch('http://localhost:8080/api/getLlamadasEmpresa', {
+        await fetch('http://localhost:8080/api/getListaLlamadasEmpresa', {
             method: 'POST',
-            body: JSON.stringify({empresa})
+            body: JSON.stringify({empresa, fechaCierre})
         })
         .then(res => { res.json().then(r => {
             llamadas = r

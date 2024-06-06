@@ -10,7 +10,7 @@
             body: JSON.stringify({empresa})
         })
         .then(res => { res.json().then(r => {
-            data = r[0]
+            data = r
         }) })
     }
 
@@ -21,11 +21,30 @@
     <h1>Facturador de servicios telefónicos</h1>
     <h2>Estado cuenta para empresa: {empresa}</h2>
 
-    <p>Total de minutos de llamadas entrantes: {data.minutosEntrantes}</p>
-    <p>Total de minutos de llamadas salientes: {data.minutosSalientes}</p>
-    <a href={`/listaLlamadasEmpresa?empresa=${empresa}`}>
-        <button>Detalle de todas las llamadas</button>
-    </a>
+    <table>
+        <tr>
+            <th>Fecha apertura</th>
+            <th>Fecha cierre</th>
+            <th>Minutos llamadas entrantes</th>
+            <th>Minutos llamadas salientes</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+        {#each data as plazo}
+        <tr>
+            <td>{plazo.fechaApertura}</td>
+            <td>{plazo.fechaCierre}</td>
+            <td>{plazo.minutosEntrantes}</td>
+            <td>{plazo.minutosSalientes}</td>
+            <td>{plazo.estado}</td>
+            <td>
+                <a href={`/listaLlamadasEmpresa?empresa=${empresa}&fechaCierre=${plazo.fechaCierre}`}>
+                    <button>Detalle de todas las llamadas</button>
+                </a>
+            </td>
+        </tr>
+        {/each}
+    </table>
 
 </div>
 
@@ -40,22 +59,11 @@
         font-style: italic;
     }
 
-    p {
-        font-family: 'Trebuchet MS';
-    }
-
-    button {
-        background-color: #9DB2BF;
-        font-size: 16px;
-        border-radius: 4px;
-        margin: 15px;
-        padding: 5px 5px;
-        transition-duration: 0.4s;
-        cursor: pointer;
-    }
-
-    button:hover {
-        background-color: #6f7e87;
+    table, th, td {
+        margin-top: 15px;
+        border: 1px solid black;
+        border-collapse: collapse;
+        padding: 10px;
     }
 
 </style>
