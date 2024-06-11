@@ -1,4 +1,4 @@
--- Armando Castro, Stephanie Sandoval | Jun 10. 24
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
 -- Tarea Programada 03 | Base de Datos I
 
 -- Procedimiento:
@@ -11,7 +11,7 @@
 -- Se abre y cierra factura con base en el dia en que se firma el contrato
 	-- Por ejemplo, un contrato firmado el 30 de enero, cierra los dias 30
 	-- Se toma cierta precaucion para meses que tienen menos de 30 dias (febrero)
-	-- En dicho mes, la factura cerraria el dia 28 o 29 segun el tipo de año
+	-- En dicho mes, la factura cerraria el dia 28 o 29 segun el tipo de aï¿½o
 	-- Una logica similar se aplica para los demas dias
 -- Abrir una factura tambien implica abrir un nuevo detalle e instancias de cobro fijo
 
@@ -36,19 +36,26 @@
 -- esto porque, independientemente de lo que pase, eventualmente se les tiene que sumar
 -- resulta mas facil hacerlo justo cuando se abren
 
+-- la logica para aplicar multas por facturas pendientes no se incluye aqui
+-- esto porque el cliente tiene ciertos dias de gracia para pagar
+-- por tanto, la multa no se aplica el mismo dia que cierra la factura
+-- en consecuencia, existe un sp por aparte que se encarga de esto
+
 -- ************************************************************* --
 
 ALTER PROCEDURE dbo.AbrirCerrarFacturas
       @inFechaOperacion DATE                                     -- fecha en que se ejecuta el SP
-    , @outResultCode INT OUTPUT                                  -- resultado de la ejecucion del SP
+    , @outResultCode INT OUTPUT                                  -- resultado de ejecucion del SP
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
 
-        -- DECLARAR VARIABLES:
+		-- ------------------------------------------------------------- --
+        -- DECLARAR VARIABLES
 
-        DECLARE @ClienteCierre TABLE (                           -- tabla para los contratos que cierran factura
+		-- tabla para los contratos que cierran factura
+        DECLARE @ClienteCierre TABLE (
               SEC INT IDENTITY(1,1)
             , IDContrato INT
 			, MontoAntesIVA MONEY
@@ -56,28 +63,25 @@ BEGIN
 			, MontoTotal MONEY
         );
 
-		DECLARE @ClienteApertura TABLE (                         -- tabla para los contratos que abren facturas
+		-- tabla para los contratos que abren facturas
+		DECLARE @ClienteApertura TABLE (
 			  SEC INT IDENTITY(1,1)
 			, IDContrato INT
 		);
 
-		DECLARE @NuevaFactura TABLE (                            -- tabla para los IDs de las facturas que se generan
+		-- tabla para los IDs de las facturas que se generan
+		DECLARE @NuevaFactura TABLE (
               IDFactura INT
             , IDContrato INT
         );
 
-		DECLARE @NuevoDetalle TABLE (                            -- tabla para los IDs de los detalles que se generan
-			  IDDetalle INT
-			, IDFactura INT
-		);
-
 		-- ------------------------------------------------------------- --
-        -- INICIALIZAR VARIABLES:
+        -- INICIALIZAR VARIABLES
 
         SET @outResultCode = 0;
 
 		-- ------------------------------------------------------------- --
-        -- INICIALIZAR TABLAS:
+        -- CARGAR DATOS NECESARIOS PARA TRANSACCION
 
 		-- ingresar la informacion de los contratos que cierran factura
 		-- se apoya de dos funciones, las cuales:
@@ -97,27 +101,28 @@ BEGIN
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC
 		CROSS APPLY dbo.CalcularMontosFinalesFactura (CC.IDContrato, @inFechaOperacion) MT;
 
+		-- ---------------------------------------- --
 		-- ingresar la informacion de los contratos que abren factura
-		-- estos son aquellos que:
-			-- recien firmaron contrato el dia de operacion
-			-- cierran factura el dia de operacion
+
+		-- se considera que un contrato abre si:
+			-- 1. se firmo el dia de operacion
+			-- 2. cierran factura el dia de operacion
 
 		INSERT INTO @ClienteApertura (IDContrato)
 		SELECT C.ID
 		FROM dbo.Contrato C
-		WHERE C.FechaContrato = @inFechaOperacion;
+		WHERE C.FechaContrato = @inFechaOperacion;                       -- contratos que se firmaron hoy
 
 		INSERT INTO @ClienteApertura (IDContrato)
 		SELECT CC.IDContrato
-		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC;
+		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC;          -- facturas que cierran hoy
 
 		-- ------------------------------------------------------------- --
-		-- ABRIR Y CERRAR FACTURAS:
+		-- ABRIR Y CERRAR FACTURAS
 
-		BEGIN TRANSACTION tProcesarFactura
+		BEGIN TRANSACTION tAbrirCerrarFacturas
 
-			-- cerrar facturas:
-
+			-- actualizar los datos de las facturas que cierran
 			UPDATE F
 			SET 
 				  TotalAntesIVA = CC.MontoAntesIVA
@@ -128,8 +133,7 @@ BEGIN
 			WHERE F.FechaFactura = @inFechaOperacion;
 
 			-- ------------------------------------------------ --
-			-- abrir nuevas facturas:
-				-- utiliza el OUTPUT para almacenar los IDs de las facturas que se generan
+			-- insertar las nuevas facturas
 
 			INSERT INTO dbo.Factura (IDContrato
 				, TotalAntesIVA
@@ -139,7 +143,7 @@ BEGIN
 				, FechaFactura
 				, FechaPago
 				, EstaPagada
-			)
+			)                                                   -- OUTPUT: guarda los IDs generados
 			OUTPUT INSERTED.ID, INSERTED.IDContrato INTO @NuevaFactura (IDFactura, IDContrato)
 			SELECT CA.IDContrato
 				, CASE                                           -- agregar el monto base de la tarifa
@@ -147,12 +151,12 @@ BEGIN
 					WHEN ETT.IDTipoElemento = 9 OR ETT.IDTipoElemento = 10 THEN 0
 					ELSE ETT.VALOR
 				  END
-				, 0
-				, 0
-				, 0
+				, 0                                              -- contador comienza en cero
+				, 0                                              -- contador comienza en cero
+				, 0                                              -- contador comienza en cero
 				, dbo.GenerarFechaCierreFactura (@inFechaOperacion, CA.IDContrato)
 				, dbo.GenerarFechaPagoFactura (@inFechaOperacion, CA.IDContrato)
-				, 0
+				, 0                                              -- marcar como pendiente
 			FROM @ClienteApertura CA
 			INNER JOIN dbo.Contrato C ON CA.IDContrato = C.ID
 			INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
@@ -160,18 +164,16 @@ BEGIN
 			ORDER BY CA.SEC
 
 			-- ------------------------------------------------ --
-			-- abrir nuevos detalles:
-				-- utiliza los IDs capturados anteriormente para establecer las FKs
-				-- utiliza el OUTPUT para almacenar los IDs de los detalles generados
+			-- abrir nuevos detalles
 
 			INSERT INTO dbo.Detalle (IDFactura)
-			OUTPUT INSERTED.ID, INSERTED.IDFactura INTO @NuevoDetalle (IDDetalle, IDFactura) 
             SELECT NF.IDFactura
             FROM @NuevaFactura NF;
 
-		COMMIT TRANSACTION tProcesarFactura
+		COMMIT TRANSACTION tAbrirCerrarFacturas
 
 		-- ------------------------------------------------------------- --
+		-- RETORNAR RESULTADOS
 
         SELECT @outResultCode AS outResultCode;
 
@@ -179,17 +181,17 @@ BEGIN
     BEGIN CATCH
 
 		IF @@TRANCOUNT > 0
-            ROLLBACK TRANSACTION tProcesarFactura;
+            ROLLBACK TRANSACTION tAbrirCerrarFacturas;
 
         INSERT INTO ErrorBaseDatos VALUES (
-			SUSER_SNAME(),
-			ERROR_NUMBER(),
-			ERROR_STATE(),
-			ERROR_SEVERITY(),
-			ERROR_LINE(),
-			ERROR_PROCEDURE(),
-			ERROR_MESSAGE(),
-			GETDATE()
+			  SUSER_SNAME()
+			, ERROR_NUMBER()
+			, ERROR_STATE()
+			, ERROR_SEVERITY()
+			, ERROR_LINE()
+			, ERROR_PROCEDURE()
+			, ERROR_MESSAGE()
+			, GETDATE()
 		);
 
         SET @outResultCode = 50008;

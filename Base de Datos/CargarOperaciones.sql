@@ -1,35 +1,49 @@
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
+-- Tarea Programada 03 | Base de Datos I
+
+-- Script:
+-- REALIZA LA LECTURA DEL ARCHIVO XML DE OPERACIONES
+
+-- Notas adicionales:
+-- el archivo se tiene de forma local en una de las computadoras
+-- se lee y se mapea la informacion hacia las tablas correspondientes
+
+-- ************************************************************* --
+
 USE Telefonos;
 GO
 
--- DECLARAR VARIABLES:
+-- DECLARAR VARIABLES
+
 DECLARE @xmlData XML;
 DECLARE @fechaActual DATE;
 DECLARE @FechaOperacion TABLE (Fecha DATE);
 DECLARE @outResultCode INT;
 
 -- ------------------------------------------------------------- --
--- INICIALIZAR VARIABLES PARA EL ARCHIVO:
+-- INICIALIZAR VARIABLES PARA EL ARCHIVO
 
 SELECT @xmlData = X
 FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\operaciones.xml', SINGLE_BLOB) AS xmlfile(X);
 
--- preparar el archivo xml:
+-- preparar el archivo xml
 DECLARE @value INT;
 EXEC sp_xml_preparedocument @value OUTPUT, @xmlData;
 
 -- ------------------------------------------------------------- --
--- INICIALIZAR VARIABLES PARA LA TABLA DE FECHAS DE OPERACION:
+-- INICIALIZAR VARIABLES PARA LA TABLA DE FECHAS DE OPERACION
 
 INSERT INTO @FechaOperacion (Fecha)
 SELECT DISTINCT FechaOperacion.value('@fecha', 'DATE') AS Fecha
 FROM @xmlData.nodes('/Operaciones/FechaOperacion') AS T(FechaOperacion);
 
 -- ------------------------------------------------------------- --
--- CARGAR DATOS Y SIMULACION:
+-- CARGAR DATOS Y SIMULACION
 
 WHILE EXISTS (SELECT 1 FROM @FechaOperacion)
 BEGIN
-    -- DECLARAR VARIABLES:
+
+    -- DECLARAR VARIABLES
     DECLARE @OperacionDiaria TABLE (
         Fecha DATE,
         Operacion XML
@@ -43,10 +57,12 @@ BEGIN
     );
 
     -- ------------------------------------------------ --
-    -- INICIALIZAR VARIABLES:
+    -- INICIALIZAR VARIABLES
 
+    -- seleccionar la fecha de operacion
     SELECT TOP 1 @fechaActual = Fecha FROM @FechaOperacion ORDER BY Fecha;
 
+    -- obtener la informacion del XML referente a la fecha
     INSERT INTO @OperacionDiaria (Fecha, Operacion)
     SELECT 
         FechaOperacion.value('@fecha', 'DATE') AS Fecha,
@@ -55,8 +71,9 @@ BEGIN
     WHERE FechaOperacion.value('@fecha', 'DATE') = @fechaActual;
 
     -- ------------------------------------------------ --
-    -- CARGAR DATOS:
-    -- Cargar datos de clientes
+    -- CARGAR DATOS
+
+    -- cargar datos de clientes
     INSERT INTO dbo.Cliente (Identificacion, Nombre)
     SELECT 
         ClienteNuevo.value('@Identificacion', 'VARCHAR(16)') AS Identificacion,
@@ -64,8 +81,7 @@ BEGIN
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/ClienteNuevo') AS T(ClienteNuevo);
 
-    -- ----------------------------------------
-    -- Cargar datos de contratos
+    -- cargar datos de contratos
     INSERT INTO dbo.Contrato (NumeroTelefono, IDCliente, IDTipoTarifa, FechaContrato)
     SELECT 
         NuevoContrato.value('@Numero', 'VARCHAR(16)') AS Numero,
@@ -77,25 +93,22 @@ BEGIN
     JOIN dbo.Cliente C ON NuevoContrato.value('@DocIdCliente', 'VARCHAR(16)') = C.Identificacion;
 
     -- ----------------------------------------
-    -- Abrir o cerrar una nueva factura para los contratos
+    -- abrir o cerrar una nueva factura para los contratos
 
     EXEC dbo.AbrirCerrarFacturas @fechaActual, @outResultCode OUTPUT;
     EXEC dbo.AbrirCerrarEstadosCuenta @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
-    -- Procesar multas:
+    -- procesar multas
 
     EXEC dbo.AplicarMultas @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
-    -- Cargar informacion de los pagos de facturas
+    -- cargar informacion de los pagos de facturas
 
     EXEC dbo.ProcesarPagoFactura @xmlData, @fechaActual, @outResultCode OUTPUT;
 
-    -- ----------------------------------------
-    -- Ingresar informacion a la tabla Parentesco
-
-    -- Extraer datos desde el XML:
+    -- extraer datos desde el XML sobre relaciones familiares
     INSERT INTO @TempRelacionFamiliar (DocIdDe, DocIdA, TipoRelacion, Fecha)
     SELECT 
         RelacionFamiliar.value('@DocIdDe', 'VARCHAR(16)') AS DocIdDe,
@@ -105,7 +118,7 @@ BEGIN
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/RelacionFamiliar') AS Relacion(RelacionFamiliar);
 
-    -- Insertar los datos en la tabla Parentesco:
+    -- cargar los datos en la tabla Parentesco
     INSERT INTO dbo.Parentesco (IDTipoRelacion, IDCliente, IDPariente)
     SELECT
         TRF.TipoRelacion AS IDTipoRelacion,
@@ -115,10 +128,12 @@ BEGIN
     INNER JOIN dbo.Cliente C1 ON TRF.DocIdDe = C1.Identificacion
     INNER JOIN dbo.Cliente C2 ON TRF.DocIdA = C2.Identificacion;
 
+    -- eliminar las relaciones familiares ya procesadas
 	DELETE FROM @TempRelacionFamiliar WHERE Fecha = @fechaActual;
 
     -- ----------------------------------------
-    -- Cargar informacion de llamadas
+    -- cargar informacion de llamadas
+
     INSERT INTO dbo.LlamadaInput (HoraInicio, HoraFin, NumeroDesde, NumeroA)
     SELECT 
         LlamadaTelefonica.value('@Inicio', 'DATETIME') AS Inicio,
@@ -129,14 +144,20 @@ BEGIN
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/LlamadaTelefonica') AS T(LlamadaTelefonica);
 
     -- ----------------------------------------
-    -- Procesar llamadas
+    -- procesar llamadas
 
+    -- procesar telefonos para estados de cuenta
     EXEC dbo.ProcesarTelefonos @fechaActual, @outResultCode OUTPUT;
+
+    -- procesar las llamadas locales
     EXEC dbo.ProcesarLlamadasLocales @fechaActual, @outResultCode OUTPUT;
+
+    -- procesar las llamadas no locales
     EXEC dbo.ProcesarLlamadasNoLocales @fechaActual, @outResultCode OUTPUT;
 
     -- ----------------------------------------
-    -- Cargar informacion de uso de datos
+    -- cargar informacion de uso de datos
+
     INSERT INTO dbo.UsoDatosInput (Fecha, NumeroTelefono, CantidadDatos)
     SELECT 
         O.Fecha AS Fecha,
@@ -146,16 +167,18 @@ BEGIN
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
 
     -- ----------------------------------------
-    -- Procesar datos:
+    -- procesar uso de datos:
 
     EXEC dbo.ProcesarUsoDatos @fechaActual, @outResultCode OUTPUT;
 
+    -- eliminar la informacion de la fecha actual de las tablas variables
     DELETE FROM @FechaOperacion WHERE Fecha = @fechaActual;
     DELETE FROM @OperacionDiaria WHERE Fecha = @fechaActual;
+
 END;
 
 -- ------------------------------------------------------------- --
--- FINALIZAR PROCESO:
+-- FINALIZAR PROCESO
 
 EXEC sp_xml_removedocument @value;
 
