@@ -45,7 +45,6 @@ BEGIN
 		DECLARE @monto900 MONEY;                                         -- costo pro minuto del servicio 900
 		DECLARE @cantidadMinutos110 INT;                                 -- cantidad de minutos por llamadas a 110
 		DECLARE @cantidadMinutos900 INT;                                 -- cantidad de minutos por llamadas a 900
-		DECLARE @cantidadLlamadas911 INT;                                -- cantidad de llamadas a 911
 
 		DECLARE @tarifaBase MONEY = 0;                                   -- monto de la tarifa base
 		DECLARE @minutosExceso INT = 0;                                  -- minutos en exceso a la tarifa base
@@ -109,12 +108,6 @@ BEGIN
 		WHERE D.IDFactura = @IDFactura;
 		PRINT @cantidadMinutos900
 
-		SELECT @cantidadLlamadas911 = ISNULL(SUM(CF.TotalLlamadas911), 0)
-		FROM dbo.CobroFijo CF
-		INNER JOIN dbo.Detalle D ON CF.IDDetalle = D.ID
-		WHERE D.IDFactura = @IDFactura;
-		PRINT @cantidadLlamadas911
-
 		SELECT @monto900 = ETT.Valor
 		FROM dbo.ElementoDeTipoTarifa ETT
 		WHERE ETT.IDTipoElemento = 10 AND ETT.IDTipoTarifa = 8;
@@ -163,7 +156,7 @@ BEGIN
 				, @minutosFamiliares AS 'Minutos a familiares'
 				, @gigasBase AS 'Gigas de tarifa base'
 				, @gigasExceso AS 'Gigas en exceso'
-				, (@cantidadLlamadas911 * @monto911) AS 'Cobro por 911'
+				, @monto911 AS 'Cobro por 911'
 				, (@cantidadMinutos110 * @monto110) AS 'Cobro por 110'
 				, (@cantidadMinutos900 * @monto900) AS 'Cobro por 900'
 

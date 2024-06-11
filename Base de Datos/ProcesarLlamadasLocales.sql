@@ -15,11 +15,6 @@ BEGIN
 			  EsGratis BIT
 		);
 
-		DECLARE @Llamada911 TABLE (
-			  IDLlamadaInput INT,
-			  NumeroPaga VARCHAR(16)
-		);
-
 		DECLARE @Llamada110 TABLE (
 			  IDLlamadaInput INT,
 			  NumeroPaga VARCHAR(16),
@@ -59,17 +54,6 @@ BEGIN
 			AND (LI.NumeroA != '911' AND LI.NumeroA != '110' AND LI.NumeroA NOT LIKE '900%')
 			AND CONVERT(DATE, LI.HoraInicio) = @inFechaOperacion;
 
-		INSERT INTO @Llamada911 (
-			  IDLlamadaInput,
-			  NumeroPaga
-		)
-		SELECT LI.ID,
-			LI.NumeroDesde
-		FROM dbo.LlamadaInput LI
-		WHERE (LI.NumeroDesde LIKE '8%' OR LI.NumeroDesde LIKE '9%') 
-			AND CONVERT(DATE, LI.HoraInicio) = @inFechaOperacion
-			AND (LI.NumeroA = '911');
-
 		INSERT INTO @Llamada110 (
 			  IDLlamadaInput,
 			  NumeroPaga,
@@ -99,19 +83,18 @@ BEGIN
 		-- INSERT INTO CobroFijo TABLE:
 		;WITH CombinedCalls AS (
 			SELECT 
-				COALESCE(L911.NumeroPaga, L110.NumeroPaga, L900.NumeroPaga) AS NumeroPaga,
-				COUNT(DISTINCT L911.IDLlamadaInput) AS Total911,
+				COALESCE(L110.NumeroPaga, L900.NumeroPaga) AS NumeroPaga,
+				1 AS Total911,
 				ISNULL(SUM(DISTINCT L110.CantidadMinutos), 0) AS Total110,
 				ISNULL(SUM(DISTINCT L900.CantidadMinutos), 0) AS Total900
-			FROM @Llamada911 L911
-			FULL OUTER JOIN @Llamada110 L110 ON L911.NumeroPaga = L110.NumeroPaga
-			FULL OUTER JOIN @Llamada900 L900 ON COALESCE(L911.NumeroPaga, L110.NumeroPaga) = L900.NumeroPaga
-			GROUP BY COALESCE(L911.NumeroPaga, L110.NumeroPaga, L900.NumeroPaga)
+			FROM @Llamada110 L110
+			FULL OUTER JOIN @Llamada900 L900 ON L110.NumeroPaga = L900.NumeroPaga
+			GROUP BY COALESCE(L110.NumeroPaga, L900.NumeroPaga)
 		)
 
 		INSERT INTO dbo.CobroFijo (
 			  IDDetalle,
-			  TotalLlamadas911,
+			  Servicio911,
 			  TotalMinutos110,
 			  TotalMinutos900
 		)

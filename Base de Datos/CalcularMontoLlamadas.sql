@@ -64,7 +64,6 @@ BEGIN
 	DECLARE @IDDetalle INT;                                      -- numero del detalle asociado a la factura actual
 
 	DECLARE @monto911 MONEY;                                     -- valor del monto por el servicio 911
-	DECLARE @cantidadLlamadas911 INT;                            -- +++
 
 	DECLARE @monto110 MONEY;                                     -- valor del monto por llamadas 110
 	DECLARE @cantidadMinutos110 INT;                             -- cantidad de minutos por llamadas a 110
@@ -125,10 +124,6 @@ BEGIN
 	INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
 	WHERE C.NumeroTelefono = @numeroTelefono AND ETT.IDTipoElemento = 11
 
-	SELECT @cantidadLlamadas911 = ISNULL(SUM(CF.TotalLlamadas911), 0)
-	FROM dbo.CobroFijo CF
-	WHERE CF.IDDetalle = @IDDetalle
-
 	SELECT @monto110 = ETT.Valor
 	FROM dbo.ElementoDeTipoTarifa ETT
 	INNER JOIN dbo.Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa
@@ -154,7 +149,7 @@ BEGIN
 	-- CALCULAR PRIMER MONTO
 
 	-- calcular monto por llamadas relacionadas con montos fijos
-	SET @montoTotal = (@cantidadLlamadas911 * @monto911) + (@cantidadMinutos110 * @monto110) + (@cantidadMinutos900 * @monto900)
+	SET @montoTotal = (@monto911) + (@cantidadMinutos110 * @monto110) + (@cantidadMinutos900 * @monto900)
 
 	-- ------------------------------------------------------------- --
 	-- CALCULAR MONTOS SEGUN TIPO DE NUMERO DEL CLIENTE
