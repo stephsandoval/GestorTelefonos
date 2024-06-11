@@ -1,3 +1,25 @@
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
+-- Tarea Programada 03 | Base de Datos I
+
+-- Procedimiento:
+-- CONSULTA DEL DETALLE DE FACTURA
+
+-- Descripcion general:
+-- desde la interfaz web, el usuario puede consultar las facturas de un numero
+-- cada factura esta asociada a un detalle
+-- este sp es para llamarse desde la capa logica y obtener la informacion
+
+-- Descripcion de parametros:
+	-- @inNumeroTelefono: numero que se quiere consultar
+	-- @inFechaFactura: fecha en la cual cierra la factura que cierra que se quiere consultar
+	-- @outResultCode: codigo de resultado del codigo
+
+-- Ejemplo de ejecucion:
+	-- DECLARE @outResultCode INT;
+	-- EXEC dbo.ConsultarDetalleFactura 88888888, 'yyyy-mm-dd, outResultCode OUTPUT
+
+-- ************************************************************* --
+
 ALTER PROCEDURE dbo.ConsultarDetalleFactura
 	  @inNumeroTelefono VARCHAR(16)
 	, @inFechaFactura DATE
@@ -6,25 +28,32 @@ AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
-        DECLARE @IDContrato INT;
-        DECLARE @IDFactura INT;
 
-        DECLARE @minutosBase INT = 0;
-		DECLARE @gigasBase FLOAT = 0;
-		DECLARE @minutosTotales INT;
-		DECLARE @gigasTotales FLOAT;
+		-- ------------------------------------------------------------- --
+		-- DECLARAR VARIABLES
 
-		DECLARE @monto911 MONEY;
-		DECLARE @monto110 MONEY;
-		DECLARE @monto900 MONEY;
-		DECLARE @cantidadMinutos110 INT;
-		DECLARE @cantidadMinutos900 INT;
-		DECLARE @cantidadLlamadas911 INT;
+        DECLARE @IDContrato INT;                                         -- ID del contrato relacionado con el numero
+        DECLARE @IDFactura INT;                                          -- ID de la factura consultada
 
-		DECLARE @tarifaBase MONEY = 0;
-		DECLARE @minutosExceso INT = 0;
-		DECLARE @gigasExceso FLOAT = 0;
-		DECLARE @minutosFamiliares INT;
+        DECLARE @minutosBase INT = 0;                                    -- minutos base de la tarifa del cliente
+		DECLARE @gigasBase FLOAT = 0;                                    -- gigas base de la tarifa del cliente
+		DECLARE @minutosTotales INT;                                     -- minutos totales de las llamadas del cliente
+		DECLARE @gigasTotales FLOAT;                                     -- gigas totales del uso de datos del cliente
+
+		DECLARE @monto911 MONEY;                                         -- monto por el servicio 911
+		DECLARE @monto110 MONEY;                                         -- costo por minuto del numero 10
+		DECLARE @monto900 MONEY;                                         -- costo pro minuto del servicio 900
+		DECLARE @cantidadMinutos110 INT;                                 -- cantidad de minutos por llamadas a 110
+		DECLARE @cantidadMinutos900 INT;                                 -- cantidad de minutos por llamadas a 900
+		DECLARE @cantidadLlamadas911 INT;                                -- cantidad de llamadas a 911
+
+		DECLARE @tarifaBase MONEY = 0;                                   -- monto de la tarifa base
+		DECLARE @minutosExceso INT = 0;                                  -- minutos en exceso a la tarifa base
+		DECLARE @gigasExceso FLOAT = 0;                                  -- gigas en exceso a la tarifa base
+		DECLARE @minutosFamiliares INT;                                  -- minutos por llamadas familiares
+
+		-- ------------------------------------------------------------- --
+		-- INICIALIZAR VARIBALES
 
 		SET @outResultCode = 0;
 
@@ -123,6 +152,9 @@ BEGIN
 		END
 		PRINT @gigasExceso
 
+		-- ------------------------------------------------------------- --
+		-- RETORNAR RESULTADOS
+
 		SELECT @outResultCode AS outResultCode;
 
 		SELECT @tarifaBase AS 'Tarifa base'
@@ -137,28 +169,24 @@ BEGIN
 
     END TRY
     BEGIN CATCH
-        INSERT INTO DBError (
-              UserName
-            , ErrorNumber
-            , ErrorState
-            , ErrorSeverity
-            , ErrorLine
-            , ErrorProcedure
-            , ErrorMessage
-            , ErrorDate
-        ) VALUES (
-              SUSER_SNAME()
-            , ERROR_NUMBER()
-            , ERROR_STATE()
-            , ERROR_SEVERITY()
-            , ERROR_LINE()
-            , ERROR_PROCEDURE()
-            , ERROR_MESSAGE()
-            , GETDATE()
-        );
+
+        INSERT INTO ErrorBaseDatos VALUES (
+			  SUSER_SNAME()
+			, ERROR_NUMBER()
+			, ERROR_STATE()
+			, ERROR_SEVERITY()
+			, ERROR_LINE()
+			, ERROR_PROCEDURE()
+			, ERROR_MESSAGE()
+			, GETDATE()
+		);
 
         SET @outResultCode = 50008;
         SELECT @outResultCode AS outResultCode;
+
     END CATCH;
     SET NOCOUNT OFF;
 END;
+
+-- ************************************************************* --
+-- fin del procedimiento para consultar el detalle

@@ -1,4 +1,4 @@
--- Armando Castro, Stephanie Sandoval | Jun 10. 24
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
 -- Tarea Programada 03 | Base de Datos I
 
 -- Funcion tabular:
@@ -42,7 +42,7 @@ AS
 BEGIN
 
 	-- ------------------------------------------------------------- --
-	-- DECLARAR VARIABLES:
+	-- DECLARAR VARIABLES
 
 	DECLARE @montoAntesIVA MONEY;
 	DECLARE @montoLlamadas MONEY;
@@ -55,18 +55,9 @@ BEGIN
 	DECLARE @montoDespuesIVA MONEY;
 
 	-- ------------------------------------------------------------- --
-	-- INICIALIZAR VARIABLES:
+	-- INICIALIZAR VARIABLES
 
-	-- calcular el monto antes de aplicar IVA:
-	SELECT @montoAntesIVA = F.TotalAntesIVA 
-	FROM Factura F
-	WHERE F.IDContrato = @inIDContrato
-
-	SELECT @montoLlamadas = dbo.CalcularMontoLlamadas (@inIDContrato, @inFechaOperacion)
-	SELECT @montoDatos = dbo.CalcularMontoUsoDatos (@inIDContrato, @inFechaOperacion)
-
-	SET @montoAntesIVA = @montoAntesIVA + @montoLlamadas + @montoDatos
-
+	-- obtener datos generales
 	SELECT @IDFactura = F.ID
 	FROM Factura F
 	WHERE F.IDContrato = @inIDContrato AND F.FechaFactura = @inFechaOperacion;
@@ -75,7 +66,26 @@ BEGIN
 	FROM dbo.Detalle D
 	WHERE D.IDFactura = @IDFactura
 
-	-- calcular el monto despues de aplicar IVA:
+	-- calcular el monto antes de aplicar IVA
+	SELECT @montoAntesIVA = F.TotalAntesIVA 
+	FROM Factura F
+	WHERE F.IDContrato = @inIDContrato
+
+	-- ---------------------------------------- --
+	-- calcular montos de la factura
+
+	-- monto por llamadas
+	SELECT @montoLlamadas = dbo.CalcularMontoLlamadas (@inIDContrato, @inFechaOperacion)
+
+	-- monto por uso de datos
+	SELECT @montoDatos = dbo.CalcularMontoUsoDatos (@inIDContrato, @inFechaOperacion)
+
+	-- nuevo monto antes de aplicar el IVA
+	SET @montoAntesIVA = @montoAntesIVA + @montoLlamadas + @montoDatos
+
+	-- ---------------------------------------- --
+	-- calcular el monto despues de aplicar IVA
+
 	SELECT @porcentajeIVA = ETT.Valor
 	FROM dbo.ElementoDeTipoTarifa ETT
 	INNER JOIN dbo.Contrato C ON C.ID = @inIDContrato
@@ -84,7 +94,9 @@ BEGIN
 	SET @porcentajeIVA = (@porcentajeIVA + 100) / 100
 	SET @montoDespuesIVA = @montoAntesIVA * @porcentajeIVA
 
-	-- INSERTAR DATOS EN TABLA DE RETORNO:
+	-- ---------------------------------------- --
+	-- INSERTAR DATOS EN TABLA DE RETORNO
+
 	INSERT INTO @MontoFactura (
 		  MontoAntesIVA
 		, MontoDespuesIVA

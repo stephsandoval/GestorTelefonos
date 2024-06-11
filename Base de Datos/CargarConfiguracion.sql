@@ -1,4 +1,4 @@
--- Armando Castro, Stephanie Sandoval | Jun 10. 24
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
 -- Tarea Programada 03 | Base de Datos I
 
 -- Script:
@@ -13,24 +13,25 @@
 USE Telefonos
 GO
 
--- DECLARAR VARIABLES:
+-- DECLARAR VARIABLES
 
 DECLARE @xmlData XML;
 
 -- ------------------------------------------------------------- --
--- INICIALIZAR VARIABLES:
+-- INICIALIZAR VARIABLES
 
 SELECT @xmlData = X
 FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio\configuracion.xml', SINGLE_BLOB) AS xmlfile(X)
 
--- preparar el archivo xml:
+-- preparar el archivo xml
 DECLARE @value INT;
 EXEC sp_xml_preparedocument @value OUTPUT, @xmlData;
 
 -- ------------------------------------------------------------- --
--- CARGAR DATOS:
+-- CARGAR DATOS
 
 -- ingresar informacion de la seccion TiposUnidades en la tabla TipoUnidad
+
 INSERT INTO dbo.TipoUnidad (ID, Nombre)
 SELECT Id,  Tipo
 FROM OPENXML (@value, '/Data/TiposUnidades/TipoUnidad', 1)
@@ -40,8 +41,8 @@ WITH (
 )
 
 -- ---------------------------------------- --
-
 -- ingresar informacion de la seccion TiposElemento en la tabla TipoElemento
+
 INSERT INTO dbo.TipoElemento (ID, IDTipoUnidad, Nombre, EsFijo)
 SELECT 
       Id
@@ -57,6 +58,7 @@ WITH (
 );
 
 -- ingresar informacion de la seccion TiposElemento en la tabla TipoElementoFijo si EsFijo = 1
+
 INSERT INTO dbo.TipoElementoFijo (ID, IDTipoElemento, Valor)
 SELECT 
       Id
@@ -71,9 +73,9 @@ WITH (
 WHERE EsFijo = 1;
 
 -- ---------------------------------------- --
-
 -- ingresar informacion de la seccion TiposTarifa en la tabla TipoTarifa
--- asociado con un trigger para insertar en ElementoDeTipoTarifa
+-- (asociado con un trigger para insertar en ElementoDeTipoTarifa)
+
 INSERT INTO dbo.TipoTarifa (ID, Nombre)
 SELECT Id,  Nombre
 FROM OPENXML (@value, '/Data/TiposTarifa/TipoTarifa', 1)
@@ -83,8 +85,8 @@ WITH (
 )
 
 -- ---------------------------------------- --
-
 -- ingresar informacion de la seccion TipoRelacionesFamiliar en la tabla TipoRelacionFamiliar
+
 INSERT INTO dbo.TipoRelacionFamiliar(ID, Nombre)
 SELECT Id,  Nombre
 FROM OPENXML (@value, '/Data/TipoRelacionesFamiliar/TipoRelacionFamiliar', 1)
@@ -94,8 +96,8 @@ WITH (
 )
 
 -- ---------------------------------------- --
-
 -- ingresar informacion de la seccion ElementosDeTipoTarifa en la tabla ElementoDeTipoTarifa
+
 INSERT INTO dbo.ElementoDeTipoTarifa(IDTipoTarifa, IDTipoElemento, Valor)
 SELECT idTipoTarifa, IdTipoElemento, Valor
 FROM OPENXML (@value, '/Data/ElementosDeTipoTarifa/ElementoDeTipoTarifa', 1)
@@ -106,12 +108,12 @@ WITH (
 )
 
 -- ------------------------------------------------------------- --
--- FINALIZAR CARGA:
+-- FINALIZAR CARGA
 
 EXEC sp_xml_removedocument @value;
 
 -- ------------------------------------------------------------- --
--- CARGA MANUAL DE OTROS DATOS:
+-- CARGA MANUAL DE OTROS DATOS
 
 INSERT INTO Operador (Nombre, DigitoPrefijoPrincipal, DigitoPrefijoSecundario)
 VALUES
