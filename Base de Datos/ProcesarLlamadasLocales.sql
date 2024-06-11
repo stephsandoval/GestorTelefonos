@@ -30,7 +30,6 @@ BEGIN
 		-- INICIALIZAR VARIABLES:
 		SET @outResultCode = 0;
 
-		-- INSERT INTO TEMP TABLES:
 		INSERT INTO @LlamadaRegistradaLocal (
 			  IDLlamadaInput,
 			  CantidadMinutos,
@@ -47,6 +46,7 @@ BEGIN
 			  END
 			, CASE
 				WHEN (LI.NumeroA LIKE '800%' AND LEN(LI.NumeroA) = 11) THEN 1
+				WHEN (LI.NumeroA LIKE '900%' AND LEN(LI.NumeroA) = 11) THEN 0
 				ELSE (SELECT dbo.EsFamiliar (LI.NumeroDesde, LI.NumeroA))
 				END
 		FROM dbo.LlamadaInput LI
