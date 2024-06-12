@@ -26,12 +26,14 @@
         <table>
             <tr>
                 <th>Fecha</th>
-                <th>Monto de gigas consumidos</th>
+                <th>Gigas consumidos</th>
+                <th>Monto</th>
             </tr>
             {#each data as datos}
             <tr>
                 <td>{datos.fecha}</td>
                 <td>{datos.gigasConsumidos}</td>
+                <td>{datos.monto}</td>
             </tr>
             {/each}
         </table>
