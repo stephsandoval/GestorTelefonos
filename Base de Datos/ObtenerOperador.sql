@@ -17,7 +17,7 @@
 
 -- ************************************************************* --
 
-CREATE FUNCTION dbo.ObtenerOperador (@inNumeroTelefono VARCHAR(16))
+ALTER FUNCTION dbo.ObtenerOperador (@inNumeroTelefono VARCHAR(16))
 RETURNS INT
 AS
 BEGIN

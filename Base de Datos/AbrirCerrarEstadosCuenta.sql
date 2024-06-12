@@ -10,6 +10,8 @@
 -- En estos estados se contabiliza la cantidad de minutos entrantes y salientes
 -- relacionados con los numeros telefonicos de cada empresa para el mes correspondiente
 
+-- Este SP se encarga de la logica para abrir y cerrar los estados
+
 -- Descripcion de parametros:
 	-- @inFechaOperacion: fecha en la cual se esta ejecutando el procedimiento
 	-- @outResultCode: resultado de ejecucion del codigo
