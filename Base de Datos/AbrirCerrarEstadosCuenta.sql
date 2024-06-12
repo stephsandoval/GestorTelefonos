@@ -30,7 +30,7 @@ BEGIN
 	SET NOCOUNT ON;
 	BEGIN TRY
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- VALIDAR EL DIA DE OPERACION
 
 		IF (DAY(@inFechaOperacion) != 5)
@@ -38,7 +38,7 @@ BEGIN
 			RETURN;
 		END
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- DECLARAR VARIABLES
 
 		-- tabla para almacenar los operadores a los que se les abre estado de cuenta
@@ -59,17 +59,21 @@ BEGIN
 			  IDEstadoCuenta INT
 		)
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- INICIALIZAR VARIABLES
 
 		SET @outResultCode = 0
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- CARGAR DATOS NECESARIOS PARA TRANSACCION	
 
 		-- cargar los operadores para apertura de estados
-		INSERT INTO @OperadorApertura (IDOperador, Nombre)
-		SELECT O.ID, O.Nombre
+		INSERT INTO @OperadorApertura (
+			  IDOperador
+			  , Nombre
+		)
+		SELECT O.ID
+			, O.Nombre
 		FROM dbo.Operador O                                              -- se le abre a todos los registrados
 
 		-- ---------------------------------------- --
@@ -98,7 +102,7 @@ BEGIN
 			GROUP BY O.ID;
 		END
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- ABRIR Y CERRAR ESTADOS DE CUENTA
 
 		BEGIN TRANSACTION tAbrirCerrarEstadoCuenta
@@ -144,7 +148,7 @@ BEGIN
 
 		COMMIT TRANSACTION tAbrirCerrarEstadoCuenta
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- RETORNAR RESULTADOS
 
 		SELECT @outResultCode AS outResultCode;

@@ -117,6 +117,7 @@ CREATE TABLE Factura (
 	FechaFactura DATE NOT NULL,
 	FechaPago DATE NOT NULL,
 	EstaPagada BIT NOT NULL,
+	EstaCerrada BIT NOT NULL,
 	FOREIGN KEY (IDContrato) REFERENCES Contrato(ID)
 );
 

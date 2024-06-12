@@ -5,9 +5,9 @@
 -- CONSULTA DEL DETALLE DE FACTURA
 
 -- Descripcion general:
--- desde la interfaz web, el usuario puede consultar las facturas de un numero
--- cada factura esta asociada a un detalle
--- este sp es para llamarse desde la capa logica y obtener la informacion
+-- Desde la interfaz web, el usuario puede consultar las facturas de un numero
+-- Cada factura esta asociada a un detalle
+-- Este sp es para llamarse desde la capa logica y obtener la informacion
 
 -- Descripcion de parametros:
 	-- @inNumeroTelefono: numero que se quiere consultar
@@ -21,37 +21,37 @@
 -- ************************************************************* --
 
 ALTER PROCEDURE dbo.ConsultarDetalleFactura
-	  @inNumeroTelefono VARCHAR(16)
-	, @inFechaFactura DATE
-	, @outResultCode INT OUTPUT
+	  @inNumeroTelefono VARCHAR(16)                              -- numero de telefono que se desea consultar
+	, @inFechaFactura DATE                                       -- fecha de cierre de la factura consultada
+	, @outResultCode INT OUTPUT                                  -- resultado de ejecucion del codigo
 AS
 BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- DECLARAR VARIABLES
 
-        DECLARE @IDContrato INT;                                         -- ID del contrato relacionado con el numero
-        DECLARE @IDFactura INT;                                          -- ID de la factura consultada
+        DECLARE @IDContrato INT;                                 -- ID del contrato relacionado con el numero
+        DECLARE @IDFactura INT;                                  -- ID de la factura consultada
 
-        DECLARE @minutosBase INT = 0;                                    -- minutos base de la tarifa del cliente
-		DECLARE @gigasBase FLOAT = 0;                                    -- gigas base de la tarifa del cliente
-		DECLARE @minutosTotales INT;                                     -- minutos totales de las llamadas del cliente
-		DECLARE @gigasTotales FLOAT;                                     -- gigas totales del uso de datos del cliente
+        DECLARE @minutosBase INT = 0;                            -- minutos base de la tarifa del cliente
+		DECLARE @gigasBase FLOAT = 0;                            -- gigas base de la tarifa del cliente
+		DECLARE @minutosTotales INT;                             -- minutos totales de las llamadas del cliente
+		DECLARE @gigasTotales FLOAT;                             -- gigas totales del uso de datos del cliente
 
-		DECLARE @monto911 MONEY;                                         -- monto por el servicio 911
-		DECLARE @monto110 MONEY;                                         -- costo por minuto del numero 10
-		DECLARE @monto900 MONEY;                                         -- costo pro minuto del servicio 900
-		DECLARE @cantidadMinutos110 INT;                                 -- cantidad de minutos por llamadas a 110
-		DECLARE @cantidadMinutos900 INT;                                 -- cantidad de minutos por llamadas a 900
+		DECLARE @monto911 MONEY;                                 -- monto por el servicio 911
+		DECLARE @monto110 MONEY;                                 -- costo por minuto del numero 10
+		DECLARE @monto900 MONEY;                                 -- costo pro minuto del servicio 900
+		DECLARE @cantidadMinutos110 INT;                         -- cantidad de minutos por llamadas a 110
+		DECLARE @cantidadMinutos900 INT;                         -- cantidad de minutos por llamadas a 900
 
-		DECLARE @tarifaBase MONEY = 0;                                   -- monto de la tarifa base
-		DECLARE @minutosExceso INT = 0;                                  -- minutos en exceso a la tarifa base
-		DECLARE @gigasExceso FLOAT = 0;                                  -- gigas en exceso a la tarifa base
-		DECLARE @minutosFamiliares INT;                                  -- minutos por llamadas familiares
+		DECLARE @tarifaBase MONEY = 0;                           -- monto de la tarifa base
+		DECLARE @minutosExceso INT = 0;                          -- minutos en exceso a la tarifa base
+		DECLARE @gigasExceso FLOAT = 0;                          -- gigas en exceso a la tarifa base
+		DECLARE @minutosFamiliares INT;                          -- minutos por llamadas familiares
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- INICIALIZAR VARIBALES
 
 		SET @outResultCode = 0;
@@ -145,7 +145,7 @@ BEGIN
 		END
 		PRINT @gigasExceso
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- RETORNAR RESULTADOS
 
 		SELECT @outResultCode AS outResultCode;

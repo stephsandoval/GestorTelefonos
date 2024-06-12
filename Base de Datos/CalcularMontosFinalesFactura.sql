@@ -5,10 +5,10 @@
 -- CALCULA LOS MONTOS FINALES DE UNA FACTURA
 
 -- Descripcion general:
--- cuando se cierra una factura, se deben actualizar varios campos
--- entre ellos: valor antes del IVA, valor despues del IVA y total
--- esta funcion se encarga de determinar dichos valores para un contrato especifico
--- se utiliza la fecha para delimitar la factura que esta abierta actualmente
+-- Cuando se cierra una factura, se deben actualizar varios campos
+-- Entre ellos: valor antes del IVA, valor despues del IVA y total
+-- Esta funcion se encarga de determinar dichos valores para un contrato especifico
+-- Se utiliza la fecha para delimitar la factura que esta abierta actualmente
 
 -- Descripcion de parametros:
 	-- @inIDContrato: contrato para el que se calculan los montos
@@ -18,14 +18,14 @@
 	-- SELECT dbo.CalcularMontosFinalesFactura (0, 'yyyy-mm-dd)
 
 -- Notas adicionales:
--- esta funcion se apoya de otras dos para calcular algunos montos
--- las otras funciones se encargan de:
+-- Esta funcion se apoya de otras dos para calcular algunos montos
+-- Las otras funciones se encargan de:
 	-- 1. determinar el monto sobre tarifa base por llamadas
 	-- 2. determinar el monto sobre tarifa base por uso de datos
 
--- una factura tiene asociado un monto por facturas pendientes no pagadas
--- ese monto no se calcula ni se retorna en esta funcion
--- de dicho calculo se encarga un procedimiento aparte
+-- Una factura tiene asociado un monto por facturas pendientes no pagadas
+-- Ese monto no se calcula ni se retorna en esta funcion
+-- De dicho calculo se encarga un procedimiento aparte
 
 -- ************************************************************* --
 
@@ -41,7 +41,7 @@ RETURNS @MontoFactura TABLE (
 AS
 BEGIN
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- DECLARAR VARIABLES
 
 	DECLARE @montoAntesIVA MONEY;
@@ -54,7 +54,7 @@ BEGIN
 	DECLARE @porcentajeIVA FLOAT;
 	DECLARE @montoDespuesIVA MONEY;
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- INICIALIZAR VARIABLES
 
 	-- obtener datos generales

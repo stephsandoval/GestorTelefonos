@@ -22,8 +22,8 @@
 	-- EXECUTE dbo.AplicarMultas 'yyyy-mm-dd', @outResultCode OUTPUT
 
 -- Notas adicionales:
--- los numeros 800 y 900 no tienen dias de gracia ni monto de multas asociados
--- por tanto, si el cliente sobrepasa la fecha de pago (mismo dia de cierre de factura)
+-- Los numeros 800 y 900 no tienen dias de gracia ni monto de multas asociados
+-- Por tanto, si el cliente sobrepasa la fecha de pago (mismo dia de cierre de factura)
 -- el monto de la multa se reflejaria como 0 (no se aplica ninguna)
 
 -- ************************************************************* --
@@ -36,7 +36,7 @@ BEGIN
 	SET NOCOUNT ON;
 	BEGIN TRY
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- DECLARAR VARIABLES
 
 		-- tabla para almacenar las facturas a las que se les aplica una multa
@@ -46,12 +46,12 @@ BEGIN
 			, MultaFacturaPendiente MONEY
 		)
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- INICIALIZAR VARIABLES
 
 		SET @outResultCode = 0;
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- CARGAR DATOS NECESARIOS PARA TRANSACCION
 
 		-- ingresar la informacion de las facturas pendientes que pasaron su fecha de pago
@@ -67,7 +67,7 @@ BEGIN
 		WHERE DATEDIFF(DAY, F.FechaPago, @inFechaOperacion) = 1 AND F.EstaPagada = 0
 		GROUP BY F.ID, ISNULL(ETT.Valor, 0)
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- APLICAR MULTAS
 
 		BEGIN TRANSACTION tAplicarMulta
@@ -82,7 +82,7 @@ BEGIN
 
 		COMMIT TRANSACTION tAplicarMulta
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- RETORNAR RESULTADOS
 
 		SELECT @outResultCode AS outResultCode;

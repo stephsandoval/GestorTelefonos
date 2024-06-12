@@ -5,8 +5,8 @@
 -- REALIZA LA LECTURA DEL ARCHIVO XML DE OPERACIONES
 
 -- Notas adicionales:
--- el archivo se tiene de forma local en una de las computadoras
--- se lee y se mapea la informacion hacia las tablas correspondientes
+-- El archivo se tiene de forma local en una de las computadoras
+-- Se lee y se mapea la informacion hacia las tablas correspondientes
 
 -- ************************************************************* --
 
@@ -20,7 +20,7 @@ DECLARE @fechaActual DATE;
 DECLARE @FechaOperacion TABLE (Fecha DATE);
 DECLARE @outResultCode INT;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- INICIALIZAR VARIABLES PARA EL ARCHIVO
 
 SELECT @xmlData = X
@@ -30,14 +30,14 @@ FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio
 DECLARE @value INT;
 EXEC sp_xml_preparedocument @value OUTPUT, @xmlData;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- INICIALIZAR VARIABLES PARA LA TABLA DE FECHAS DE OPERACION
 
 INSERT INTO @FechaOperacion (Fecha)
 SELECT DISTINCT FechaOperacion.value('@fecha', 'DATE') AS Fecha
 FROM @xmlData.nodes('/Operaciones/FechaOperacion') AS T(FechaOperacion);
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- CARGAR DATOS Y SIMULACION
 
 WHILE EXISTS (SELECT 1 FROM @FechaOperacion)
@@ -45,15 +45,15 @@ BEGIN
 
     -- DECLARAR VARIABLES
     DECLARE @OperacionDiaria TABLE (
-        Fecha DATE,
-        Operacion XML
+          Fecha DATE
+        , Operacion XML
     );
 
 	DECLARE @TempRelacionFamiliar TABLE (
-		Fecha DATE,
-        DocIdDe VARCHAR(16),
-        DocIdA VARCHAR(16),
-        TipoRelacion INT
+		  Fecha DATE
+        , DocIdDe VARCHAR(16)
+        , DocIdA VARCHAR(16)
+        , TipoRelacion INT
     );
 
     -- ------------------------------------------------ --
@@ -65,8 +65,8 @@ BEGIN
     -- obtener la informacion del XML referente a la fecha
     INSERT INTO @OperacionDiaria (Fecha, Operacion)
     SELECT 
-        FechaOperacion.value('@fecha', 'DATE') AS Fecha,
-        FechaOperacion.query('.') AS Operacion
+          FechaOperacion.value('@fecha', 'DATE') AS Fecha
+        , FechaOperacion.query('.') AS Operacion
     FROM @xmlData.nodes('/Operaciones/FechaOperacion') AS T(FechaOperacion)
     WHERE FechaOperacion.value('@fecha', 'DATE') = @fechaActual;
 
@@ -76,18 +76,18 @@ BEGIN
     -- cargar datos de clientes
     INSERT INTO dbo.Cliente (Identificacion, Nombre)
     SELECT 
-        ClienteNuevo.value('@Identificacion', 'VARCHAR(16)') AS Identificacion,
-        ClienteNuevo.value('@Nombre', 'VARCHAR(64)') AS Nombre
+          ClienteNuevo.value('@Identificacion', 'VARCHAR(16)') AS Identificacion
+        , ClienteNuevo.value('@Nombre', 'VARCHAR(64)') AS Nombre
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/ClienteNuevo') AS T(ClienteNuevo);
 
     -- cargar datos de contratos
     INSERT INTO dbo.Contrato (NumeroTelefono, IDCliente, IDTipoTarifa, FechaContrato)
     SELECT 
-        NuevoContrato.value('@Numero', 'VARCHAR(16)') AS Numero,
-        C.ID AS IDCliente,
-        NuevoContrato.value('@TipoTarifa', 'INT') AS IDTipoTarifa,
-        O.Fecha AS FechaContrato
+          NuevoContrato.value('@Numero', 'VARCHAR(16)') AS Numero
+        , C.ID AS IDCliente
+        , NuevoContrato.value('@TipoTarifa', 'INT') AS IDTipoTarifa
+        , O.Fecha AS FechaContrato
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/NuevoContrato') AS T(NuevoContrato)
     JOIN dbo.Cliente C ON NuevoContrato.value('@DocIdCliente', 'VARCHAR(16)') = C.Identificacion;
@@ -111,19 +111,19 @@ BEGIN
     -- extraer datos desde el XML sobre relaciones familiares
     INSERT INTO @TempRelacionFamiliar (DocIdDe, DocIdA, TipoRelacion, Fecha)
     SELECT 
-        RelacionFamiliar.value('@DocIdDe', 'VARCHAR(16)') AS DocIdDe,
-        RelacionFamiliar.value('@DocIdA', 'VARCHAR(16)') AS DocIdA,
-        RelacionFamiliar.value('@TipoRelacion', 'INT') AS TipoRelacion,
-		@fechaActual AS Fecha
+          RelacionFamiliar.value('@DocIdDe', 'VARCHAR(16)') AS DocIdDe
+        , RelacionFamiliar.value('@DocIdA', 'VARCHAR(16)') AS DocIdA
+        , RelacionFamiliar.value('@TipoRelacion', 'INT') AS TipoRelacion
+		, @fechaActual AS Fecha
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/RelacionFamiliar') AS Relacion(RelacionFamiliar);
 
     -- cargar los datos en la tabla Parentesco
     INSERT INTO dbo.Parentesco (IDTipoRelacion, IDCliente, IDPariente)
     SELECT
-        TRF.TipoRelacion AS IDTipoRelacion,
-        C1.ID AS IDCliente,
-        C2.ID AS IDPariente
+          TRF.TipoRelacion AS IDTipoRelacion
+        , C1.ID AS IDCliente
+        , C2.ID AS IDPariente
     FROM @TempRelacionFamiliar TRF
     INNER JOIN dbo.Cliente C1 ON TRF.DocIdDe = C1.Identificacion
     INNER JOIN dbo.Cliente C2 ON TRF.DocIdA = C2.Identificacion;
@@ -136,10 +136,10 @@ BEGIN
 
     INSERT INTO dbo.LlamadaInput (HoraInicio, HoraFin, NumeroDesde, NumeroA)
     SELECT 
-        LlamadaTelefonica.value('@Inicio', 'DATETIME') AS Inicio,
-        LlamadaTelefonica.value('@Final', 'DATETIME') AS Fin,
-        LlamadaTelefonica.value('@NumeroDe', 'VARCHAR(16)') AS NumeroDe,
-        LlamadaTelefonica.value('@NumeroA', 'VARCHAR(16)') AS NumeroA
+          LlamadaTelefonica.value('@Inicio', 'DATETIME') AS Inicio
+        , LlamadaTelefonica.value('@Final', 'DATETIME') AS Fin
+        , LlamadaTelefonica.value('@NumeroDe', 'VARCHAR(16)') AS NumeroDe
+        , LlamadaTelefonica.value('@NumeroA', 'VARCHAR(16)') AS NumeroA
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/LlamadaTelefonica') AS T(LlamadaTelefonica);
 
@@ -160,9 +160,9 @@ BEGIN
 
     INSERT INTO dbo.UsoDatosInput (Fecha, NumeroTelefono, CantidadDatos)
     SELECT 
-        O.Fecha AS Fecha,
-        UsoDatos.value('@Numero', 'VARCHAR(16)') AS Numero,
-        UsoDatos.value('@QGigas', 'FLOAT') AS CantidadDatos
+          O.Fecha AS Fecha
+        , UsoDatos.value('@Numero', 'VARCHAR(16)') AS Numero
+        , UsoDatos.value('@QGigas', 'FLOAT') AS CantidadDatos
     FROM @OperacionDiaria AS O
     CROSS APPLY O.Operacion.nodes('/FechaOperacion/UsoDatos') AS T(UsoDatos);
 
@@ -177,7 +177,7 @@ BEGIN
 
 END;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- FINALIZAR PROCESO
 
 EXEC sp_xml_removedocument @value;

@@ -15,7 +15,6 @@
 	-- existe una cantidad base de gigas asociada a cada tarifa
     -- si la suma total de gigas no supera la tarifa, no se cobran
 
-
 -- Descripcion de parametros:
 	-- @inIDContrato: contrato para el que se calculan los montos
 	-- @inFechaOperacion: fecha en la cual se esta ejecutando el procedimiento
@@ -26,14 +25,14 @@
 -- ************************************************************* --
 
 ALTER FUNCTION dbo.CalcularMontoUsoDatos (
-      @inIDContrato INT
-    , @inFechaOperacion DATE
+      @inIDContrato INT                                          -- contrato para el que se calculan los montos
+    , @inFechaOperacion DATE                                     -- fecha en que se ejecuta la funcion
 )
 RETURNS MONEY
 AS
 BEGIN
 
-    -- ------------------------------------------------------------- --
+    -- ----------------------------------------------------- --
     -- DECLARAR VARIABLES
 
     DECLARE @IDDetalle INT;
@@ -42,7 +41,7 @@ BEGIN
     DECLARE @cantidadDatosBase FLOAT = 0;
     DECLARE @montoTotal MONEY = 0;
 
-    -- ------------------------------------------------------------- --
+    -- ----------------------------------------------------- --
     -- INICIALIZAR VARIABLES
 
     SELECT @IDDetalle = D.ID
@@ -50,7 +49,7 @@ BEGIN
     INNER JOIN Factura F ON D.IDFactura = F.ID
     WHERE @inFechaOperacion = F.FechaFactura AND F.IDContrato = @inIDContrato;
 
-    -- ------------------------------------------------------------- --
+    -- ----------------------------------------------------- --
     -- CALCULAR MONTO
 
     SELECT @tarifaDatos = ETT.Valor

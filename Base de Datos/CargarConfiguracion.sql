@@ -5,8 +5,8 @@
 -- REALIZA LA LECTURA DEL ARCHIVO XML DE CONFIGURACION
 
 -- Notas adicionales:
--- el archivo se tiene de forma local en una de las computadoras
--- se lee y se mapea la informacion hacia las tablas correspondientes
+-- El archivo se tiene de forma local en una de las computadoras
+-- Se lee y se mapea la informacion hacia las tablas correspondientes
 
 -- ************************************************************* --
 
@@ -17,7 +17,7 @@ GO
 
 DECLARE @xmlData XML;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- INICIALIZAR VARIABLES
 
 SELECT @xmlData = X
@@ -27,7 +27,7 @@ FROM OPENROWSET (BULK 'C:\Users\Stephanie\Documents\SQL Server Management Studio
 DECLARE @value INT;
 EXEC sp_xml_preparedocument @value OUTPUT, @xmlData;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- CARGAR DATOS
 
 -- ingresar informacion de la seccion TiposUnidades en la tabla TipoUnidad
@@ -107,24 +107,24 @@ WITH (
 	, Valor INT
 )
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- FINALIZAR CARGA
 
 EXEC sp_xml_removedocument @value;
 
--- ------------------------------------------------------------- --
+-- ----------------------------------------------------- --
 -- CARGA MANUAL DE OTROS DATOS
 
 INSERT INTO Operador (Nombre, DigitoPrefijoPrincipal, DigitoPrefijoSecundario)
 VALUES
-    ('Empresa Z', '8', '9'),
-    ('Empresa X', '7', NULL),
-    ('Empresa Y', '6', NULL);
+      ('Empresa Z', '8', '9')
+    , ('Empresa X', '7', NULL)
+    , ('Empresa Y', '6', NULL);
 
 INSERT INTO TipoLlamada (Nombre)
 VALUES
-	('Entrada'),
-	('Salida');
+	  ('Entrada')
+	, ('Salida');
 
 -- ************************************************************* --
 -- fin del codigo para cargar los datos de configuracion

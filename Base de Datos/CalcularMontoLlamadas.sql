@@ -28,21 +28,21 @@
 	-- SELECT dbo.CalcularMontoLlamadas (0, 'yyyy-mm-dd)
 
 -- Notas adicionales:
--- notese que si la cantidad de minutos de todas las llamadas
+-- Notese que si la cantidad de minutos de todas las llamadas
 -- no sobrepasa el valor base, la funcion retornaria 0
--- esto porque la funcion se encarga de determinar el monto sobre la tarifa base
+-- Esto porque la funcion se encarga de determinar el monto sobre la tarifa base
 -- (por minutos que sobrepasaron la cantidad base del cliente)
 
--- ademas, los minutos de llamadas relacionadas con montos fijos,
+-- Ademas, los minutos de llamadas relacionadas con montos fijos,
 -- no se consideran dentro de la tarifa basica
--- estos siempre se cobran
+-- Estos siempre se cobran
 
--- respecto al monto por llamadas no locales:
+-- Respecto al monto por llamadas no locales:
 	-- este valor se aplica cuando la cantidad de minutos de la llamada
 	-- hace que se sobrepase la cantidad base de minutos del tipo de tarifa
 	-- entonces, los minutos extras se cobran con estos montos
 
--- respecto a los montos fijos:
+-- Respecto a los montos fijos:
 	-- los montos por 110 y 900 se utilizan solo si el cliente llama a esos numeros
 	-- en cambio, el monto por el servicio 911 se aplica a todos
 	-- es decir, independientemente de si utilizaron el servicio o no durante ese mes
@@ -57,7 +57,7 @@ RETURNS INT
 AS
 BEGIN
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- DECLARAR VARIABLES
 
 	DECLARE @numeroTelefono VARCHAR(32);                         -- numero de telefono del contrato
@@ -100,7 +100,7 @@ BEGIN
 		, EsGratis BIT
 	)
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- INICIALIZAR VARIABLES
 
 	-- valores generales
@@ -145,13 +145,13 @@ BEGIN
 	FROM dbo.ElementoDeTipoTarifa ETT
 	WHERE ETT.IDTipoTarifa = 7 AND ETT.IDTipoElemento = 9
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- CALCULAR PRIMER MONTO
 
 	-- calcular monto por llamadas relacionadas con montos fijos
 	SET @montoTotal = (@monto911) + (@cantidadMinutos110 * @monto110) + (@cantidadMinutos900 * @monto900)
 
-	-- ------------------------------------------------------------- --
+	-- ----------------------------------------------------- --
 	-- CALCULAR MONTOS SEGUN TIPO DE NUMERO DEL CLIENTE
 
 	-- si es un numero 800 +++
@@ -187,8 +187,8 @@ BEGIN
 	-- si es un numero con formato 8XXX-XXXX
 	ELSE IF (@numeroTelefono LIKE '8%' AND LEN(@numeroTelefono) = 8)
 	BEGIN
-		-- obtener los montos necesarios para los calculos
 
+		-- obtener los montos necesarios para los calculos
 		SELECT @cantidadMinutosBase = ETT.Valor
 		FROM dbo.ElementoDeTipoTarifa ETT
 		INNER JOIN Contrato C ON C.IDTipoTarifa = ETT.IDTipoTarifa

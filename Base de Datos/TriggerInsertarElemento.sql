@@ -1,4 +1,4 @@
--- Armando Castro, Stephanie Sandoval | Jun 10. 24
+-- Armando Castro, Stephanie Sandoval | Jun 11. 24
 -- Tarea Programada 03 | Base de Datos I
 
 -- Trigger:

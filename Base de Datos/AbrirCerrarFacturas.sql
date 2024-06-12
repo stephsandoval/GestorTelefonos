@@ -26,20 +26,20 @@
 	-- EXECUTE dbo.AbrirCerrarFacturas 'yyyy-mm-dd', @outResultCode OUTPUT
 
 -- Notas adicionales:
--- el SP se apoya de funciones adicionales para realizar algunos calculos
--- estas se encargan de:
+-- El SP se apoya de funciones adicionales para realizar algunos calculos
+-- Estas se encargan de:
 	-- encontrar los contratos a los que se les debe cerrar una factura
 	-- calcular los montos finales para las facturas que cierran
 	-- generar las fechas de cierre y de pago
 
--- por otro lado, para las facturas que abren, se les suma la tarifa base
--- esto porque, independientemente de lo que pase, eventualmente se les tiene que sumar
+-- Por otro lado, para las facturas que abren, se les suma la tarifa base
+-- Esto porque, independientemente de lo que pase, eventualmente se les tiene que sumar
 -- resulta mas facil hacerlo justo cuando se abren
 
--- la logica para aplicar multas por facturas pendientes no se incluye aqui
--- esto porque el cliente tiene ciertos dias de gracia para pagar
--- por tanto, la multa no se aplica el mismo dia que cierra la factura
--- en consecuencia, existe un sp por aparte que se encarga de esto
+-- La logica para aplicar multas por facturas pendientes no se incluye aqui
+-- Esto porque el cliente tiene ciertos dias de gracia para pagar
+-- Por tanto, la multa no se aplica el mismo dia que cierra la factura
+-- En consecuencia, existe un sp por aparte que se encarga de esto
 
 -- ************************************************************* --
 
@@ -51,7 +51,7 @@ BEGIN
     SET NOCOUNT ON;
     BEGIN TRY
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
         -- DECLARAR VARIABLES
 
 		-- tabla para los contratos que cierran factura
@@ -75,12 +75,12 @@ BEGIN
             , IDContrato INT
         );
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
         -- INICIALIZAR VARIABLES
 
         SET @outResultCode = 0;
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
         -- CARGAR DATOS NECESARIOS PARA TRANSACCION
 
 		-- ingresar la informacion de los contratos que cierran factura
@@ -117,7 +117,7 @@ BEGIN
 		SELECT CC.IDContrato
 		FROM dbo.ObtenerContratosCierre (@inFechaOperacion) CC;          -- facturas que cierran hoy
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- ABRIR Y CERRAR FACTURAS
 
 		BEGIN TRANSACTION tAbrirCerrarFacturas
@@ -128,6 +128,7 @@ BEGIN
 				  TotalAntesIVA = CC.MontoAntesIVA
 				, TotalDespuesIVA = CC.MontoDespuesIVA
 				, Total = CC.MontoTotal
+				, EstaCerrada = 1
 			FROM dbo.Factura F
 			INNER JOIN @ClienteCierre CC ON F.IDContrato = CC.IDContrato
 			WHERE F.FechaFactura = @inFechaOperacion;
@@ -143,6 +144,7 @@ BEGIN
 				, FechaFactura
 				, FechaPago
 				, EstaPagada
+				, EstaCerrada
 			)                                                   -- OUTPUT: guarda los IDs generados
 			OUTPUT INSERTED.ID, INSERTED.IDContrato INTO @NuevaFactura (IDFactura, IDContrato)
 			SELECT CA.IDContrato
@@ -157,6 +159,7 @@ BEGIN
 				, dbo.GenerarFechaCierreFactura (@inFechaOperacion, CA.IDContrato)
 				, dbo.GenerarFechaPagoFactura (@inFechaOperacion, CA.IDContrato)
 				, 0                                              -- marcar como pendiente
+				, 0                                              -- marcar como abierta
 			FROM @ClienteApertura CA
 			INNER JOIN dbo.Contrato C ON CA.IDContrato = C.ID
 			INNER JOIN dbo.ElementoDeTipoTarifa ETT ON C.IDTipoTarifa = ETT.IDTipoTarifa
@@ -172,7 +175,7 @@ BEGIN
 
 		COMMIT TRANSACTION tAbrirCerrarFacturas
 
-		-- ------------------------------------------------------------- --
+		-- ----------------------------------------------------- --
 		-- RETORNAR RESULTADOS
 
         SELECT @outResultCode AS outResultCode;
